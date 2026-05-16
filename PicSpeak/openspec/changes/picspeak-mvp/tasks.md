@@ -27,9 +27,9 @@ Chain strategy: pending
 
 ## Phase 1: Foundation
 
-- [ ] 1.1 Add dependencies to `pubspec.yaml` (camera, mlkit, flutter_tts, riverpod, go_router, shared_prefs, path_provider, intl)
-- [ ] 1.2 Add camera + audio permissions to `AndroidManifest.xml` and `Info.plist`
-- [ ] 1.3 Create `assets/labels_es.json` with EN→ES mapping for ~400 ML Kit labels
+- [x] 1.1 Add dependencies to `pubspec.yaml` (camera, mlkit, flutter_tts, riverpod, go_router, shared_prefs, path_provider, intl)
+- [x] 1.2 Add camera + audio permissions to `AndroidManifest.xml` and `Info.plist`
+- [x] 1.3 Create `assets/labels_es.json` with EN→ES mapping for ~400 ML Kit labels
 - [x] 1.4 Create `lib/app/theme.dart` with ThemeMode notifier and light/dark themes
 - [x] 1.5 Create `lib/app/router.dart` with GoRouter routes for all screens
 - [x] 1.6 Rewrite `lib/main.dart` to `ProviderScope` + `MaterialApp.router`

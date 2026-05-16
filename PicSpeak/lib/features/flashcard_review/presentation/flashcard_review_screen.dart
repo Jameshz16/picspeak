@@ -101,6 +101,13 @@ class _FlashcardReviewScreenState extends ConsumerState<FlashcardReviewScreen>
         _isFlipped = false;
       });
       _flipController.reset();
+    } else if (_currentIndex == _cards.length - 1) {
+      // Last card — advance to completion view
+      setState(() {
+        _currentIndex = _cards.length;
+        _isFlipped = false;
+      });
+      _flipController.reset();
     }
   }
 
@@ -211,8 +218,7 @@ class _FlashcardReviewScreenState extends ConsumerState<FlashcardReviewScreen>
                   const SizedBox(width: 24),
                   IconButton(
                     icon: const Icon(Icons.arrow_forward_ios),
-                    onPressed:
-                        _currentIndex < _cards.length - 1 ? _nextCard : null,
+                    onPressed: _nextCard,
                   ),
                 ],
               ),

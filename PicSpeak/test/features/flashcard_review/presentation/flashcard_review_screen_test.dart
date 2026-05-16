@@ -177,30 +177,21 @@ void main() {
       expect(find.text('cat'), findsOneWidget);
     });
 
-    testWidgets('on last card, next button is disabled and swipe does not advance',
+testWidgets('on last card, next button advances to completion view',
         (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget(initialIndex: 1));
       await tester.pumpAndSettle();
 
       expect(find.text('cat'), findsOneWidget);
 
-      // Swipe left should not advance past last card
-      await tester.fling(
-        find.byType(GestureDetector).first,
-        const Offset(-300, 0),
-        1000,
-      );
-      await tester.pumpAndSettle();
-
-      // Still on last card
-      expect(find.text('cat'), findsOneWidget);
-
-      // Forward arrow should be disabled
+      // Tap forward arrow to go to completion
       final forwardButton = find.widgetWithIcon(IconButton, Icons.arrow_forward_ios);
       expect(forwardButton, findsOneWidget);
-      // The IconButton is present but its onPressed is null when disabled
-      final iconButton = tester.widget<IconButton>(forwardButton);
-      expect(iconButton.onPressed, isNull);
+      await tester.tap(forwardButton);
+      await tester.pumpAndSettle();
+
+      // Should show completion view
+      expect(find.text('¡Review completado!'), findsOneWidget);
     });
   });
 }
