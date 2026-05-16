@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/services/tts_service.dart';
+import '../../app_settings/data/settings_providers.dart';
 import '../../object_recognition/domain/recognized_word.dart';
 import '../../object_recognition/presentation/tts_play_notifier.dart';
 import '../data/flashcard_providers.dart';
@@ -122,9 +123,20 @@ class _FlashcardReviewScreenState extends ConsumerState<FlashcardReviewScreen>
     _flipController.reset();
   }
 
+  void _speakWithSpeed(String text, String locale, double speed) {
+    Future<void> doIt() async {
+      await ref.read(ttsServiceProvider).setSpeed(speed);
+      ref.read(ttsPlayNotifierProvider.notifier).speak(text, locale);
+    }
+    doIt();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final settingsAsync = ref.watch(settingsProvider);
+    final isSpanishPrimary = settingsAsync.valueOrNull?.locale == 'es';
+    final voiceSpeed = settingsAsync.valueOrNull?.voiceSpeed ?? 1.0;
 
     if (_isLoading) {
       return const Scaffold(
@@ -182,8 +194,8 @@ class _FlashcardReviewScreenState extends ConsumerState<FlashcardReviewScreen>
                         ..rotateY(showBack ? angle - pi : angle),
                       alignment: Alignment.center,
                       child: showBack
-                          ? _buildBackSide(word, theme)
-                          : _buildFrontSide(word, theme),
+                          ? _buildBackSide(word, theme, isSpanishPrimary, voiceSpeed)
+                          : _buildFrontSide(word, theme, isSpanishPrimary, voiceSpeed),
                     );
                   },
                 ),
@@ -212,8 +224,18 @@ class _FlashcardReviewScreenState extends ConsumerState<FlashcardReviewScreen>
     );
   }
 
-  Widget _buildFrontSide(RecognizedWord word, ThemeData theme) {
+  Widget _buildFrontSide(
+    RecognizedWord word,
+    ThemeData theme,
+    bool isSpanishPrimary,
+    double voiceSpeed,
+  ) {
     final speakingLocale = ref.watch(ttsPlayNotifierProvider);
+    final labelText = isSpanishPrimary ? word.esLabel : word.enLabel;
+    final ttsLocale = isSpanishPrimary ? 'es-ES' : 'en-US';
+    final ttsLabel = isSpanishPrimary ? 'Escuchar en español' : 'Escuchar en inglés';
+    final hasTranslation = word.esLabel != 'Traducción no disponible';
+    final ttsAvailable = isSpanishPrimary ? _esAvailable && hasTranslation : _enAvailable;
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -239,7 +261,7 @@ class _FlashcardReviewScreenState extends ConsumerState<FlashcardReviewScreen>
             flex: 2,
             child: Center(
               child: Text(
-                word.enLabel,
+                labelText,
                 style: theme.textTheme.headlineLarge,
                 textAlign: TextAlign.center,
               ),
@@ -248,14 +270,12 @@ class _FlashcardReviewScreenState extends ConsumerState<FlashcardReviewScreen>
           Padding(
             padding: const EdgeInsets.all(12),
             child: _TtsButton(
-              label: 'Escuchar en inglés',
-              locale: 'en-US',
-              text: word.enLabel,
-              available: _enAvailable,
-              isSpeaking: speakingLocale == 'en-US',
-              onSpeak: (text, locale) => ref
-                  .read(ttsPlayNotifierProvider.notifier)
-                  .speak(text, locale),
+              label: ttsLabel,
+              locale: ttsLocale,
+              text: labelText,
+              available: ttsAvailable,
+              isSpeaking: speakingLocale == ttsLocale,
+              onSpeak: (text, locale) => _speakWithSpeed(text, locale, voiceSpeed),
             ),
           ),
         ],
@@ -263,9 +283,18 @@ class _FlashcardReviewScreenState extends ConsumerState<FlashcardReviewScreen>
     );
   }
 
-  Widget _buildBackSide(RecognizedWord word, ThemeData theme) {
+  Widget _buildBackSide(
+    RecognizedWord word,
+    ThemeData theme,
+    bool isSpanishPrimary,
+    double voiceSpeed,
+  ) {
     final speakingLocale = ref.watch(ttsPlayNotifierProvider);
+    final labelText = isSpanishPrimary ? word.enLabel : word.esLabel;
+    final ttsLocale = isSpanishPrimary ? 'en-US' : 'es-ES';
+    final ttsLabel = isSpanishPrimary ? 'Escuchar en inglés' : 'Escuchar en español';
     final hasTranslation = word.esLabel != 'Traducción no disponible';
+    final ttsAvailable = isSpanishPrimary ? _enAvailable : _esAvailable && hasTranslation;
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -291,7 +320,7 @@ class _FlashcardReviewScreenState extends ConsumerState<FlashcardReviewScreen>
             flex: 2,
             child: Center(
               child: Text(
-                word.esLabel,
+                labelText,
                 style: theme.textTheme.headlineLarge?.copyWith(
                   color: theme.colorScheme.secondary,
                 ),
@@ -302,14 +331,12 @@ class _FlashcardReviewScreenState extends ConsumerState<FlashcardReviewScreen>
           Padding(
             padding: const EdgeInsets.all(12),
             child: _TtsButton(
-              label: 'Escuchar en español',
-              locale: 'es-ES',
-              text: word.esLabel,
-              available: _esAvailable && hasTranslation,
-              isSpeaking: speakingLocale == 'es-ES',
-              onSpeak: (text, locale) => ref
-                  .read(ttsPlayNotifierProvider.notifier)
-                  .speak(text, locale),
+              label: ttsLabel,
+              locale: ttsLocale,
+              text: labelText,
+              available: ttsAvailable,
+              isSpeaking: speakingLocale == ttsLocale,
+              onSpeak: (text, locale) => _speakWithSpeed(text, locale, voiceSpeed),
             ),
           ),
         ],

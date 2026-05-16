@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:picspeak/core/services/tts_service.dart';
+import 'package:picspeak/features/app_settings/data/settings_providers.dart';
+import 'package:picspeak/features/app_settings/domain/app_settings.dart';
 import 'package:picspeak/features/flashcard_review/data/flashcard_providers.dart';
 import 'package:picspeak/features/flashcard_review/domain/flashcard_repository.dart';
 import 'package:picspeak/features/flashcard_review/presentation/flashcard_review_screen.dart';
@@ -83,6 +85,9 @@ void main() {
           ttsPlayNotifierProvider.overrideWith((ref) {
             return TtsPlayNotifier(mockTts);
           }),
+          settingsProvider.overrideWith(
+            (ref) => Stream.value(const AppSettings(locale: 'en')),
+          ),
         ],
         child: MaterialApp(
           home: FlashcardReviewScreen(initialIndex: initialIndex),
@@ -97,6 +102,31 @@ void main() {
 
       expect(find.text('dog'), findsOneWidget);
       expect(find.text('perro'), findsNothing);
+    });
+
+    testWidgets('when locale is es, shows front side (ES label) in initial state',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            flashcardRepositoryProvider.overrideWithValue(mockRepo),
+            ttsServiceProvider.overrideWithValue(mockTts),
+            ttsPlayNotifierProvider.overrideWith((ref) {
+              return TtsPlayNotifier(mockTts);
+            }),
+            settingsProvider.overrideWith(
+              (ref) => Stream.value(const AppSettings(locale: 'es')),
+            ),
+          ],
+          child: const MaterialApp(
+            home: FlashcardReviewScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('perro'), findsOneWidget);
+      expect(find.text('dog'), findsNothing);
     });
 
     testWidgets('tap triggers flip and shows back side (ES label)',
