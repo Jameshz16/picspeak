@@ -7,7 +7,7 @@ class AppSettings {
 
   const AppSettings({
     this.locale = 'es',
-    this.voiceSpeed = 0.5,
+    this.voiceSpeed = 1.0,
     this.themeMode = ThemeMode.system,
   });
 
@@ -34,7 +34,7 @@ class AppSettings {
   factory AppSettings.fromJson(Map<String, dynamic> json) {
     return AppSettings(
       locale: json['locale'] as String? ?? 'es',
-      voiceSpeed: (json['voiceSpeed'] as num?)?.toDouble() ?? 0.5,
+      voiceSpeed: (json['voiceSpeed'] as num?)?.toDouble() ?? 1.0,
       themeMode: ThemeMode.values[json['themeMode'] as int? ?? 0],
     );
   }

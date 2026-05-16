@@ -112,10 +112,10 @@ class SettingsScreen extends ConsumerWidget {
                 const SizedBox(height: 8),
                 Slider(
                   value: settings.voiceSpeed,
-                  min: 0.5,
-                  max: 1.5,
-                  divisions: 10,
-                  label: '${settings.voiceSpeed.toStringAsFixed(1)}x',
+                  min: 0.25,
+                  max: 2.0,
+                  divisions: 7,
+                  label: '${settings.voiceSpeed.toStringAsFixed(2)}x',
                   onChanged: (value) {
                     final updated = settings.copyWith(voiceSpeed: value);
                     repository.save(updated);
@@ -124,8 +124,8 @@ class SettingsScreen extends ConsumerWidget {
                 const Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('0.5x', style: TextStyle(fontSize: 12)),
-                    Text('1.5x', style: TextStyle(fontSize: 12)),
+                    Text('0.25x', style: TextStyle(fontSize: 12)),
+                    Text('2.0x', style: TextStyle(fontSize: 12)),
                   ],
                 ),
               ],
