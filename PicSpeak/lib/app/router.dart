@@ -44,7 +44,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/review',
-        builder: (context, state) => const FlashcardReviewScreen(),
+        builder: (context, state) {
+          final indexStr = state.uri.queryParameters['index'];
+          final initialIndex = int.tryParse(indexStr ?? '') ?? 0;
+          return FlashcardReviewScreen(initialIndex: initialIndex);
+        },
       ),
       GoRoute(
         path: '/history',
