@@ -16,7 +16,7 @@ class TtsServiceImpl implements TtsService {
 
   Future<void> initialize() async {
     await _flutterTts.setLanguage('en-US');
-    await _flutterTts.setSpeechRate(0.5);
+    await _flutterTts.setSpeechRate(1.0);
     await _flutterTts.setVolume(1.0);
     await _flutterTts.setPitch(1.0);
   }
