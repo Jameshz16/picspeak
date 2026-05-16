@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../flashcard_review/data/flashcard_providers.dart';
 import '../../object_recognition/domain/recognized_word.dart';
 import '../data/history_providers.dart';
 
@@ -89,21 +90,64 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   }
 }
 
-class _HistoryListTile extends StatelessWidget {
+class _HistoryListTile extends ConsumerStatefulWidget {
   final RecognizedWord word;
   final VoidCallback onTap;
 
   const _HistoryListTile({required this.word, required this.onTap});
 
   @override
+  ConsumerState<_HistoryListTile> createState() => _HistoryListTileState();
+}
+
+class _HistoryListTileState extends ConsumerState<_HistoryListTile> {
+  bool _isFavorited = false;
+  bool _isChecking = true;
+  bool _isToggling = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkFavorite();
+  }
+
+  Future<void> _checkFavorite() async {
+    final repo = ref.read(flashcardRepositoryProvider);
+    final exists = await repo.exists(widget.word.enLabel);
+    if (mounted) {
+      setState(() {
+        _isFavorited = exists;
+        _isChecking = false;
+      });
+    }
+  }
+
+  Future<void> _toggleFavorite() async {
+    if (_isToggling) return;
+    setState(() => _isToggling = true);
+    try {
+      final repo = ref.read(flashcardRepositoryProvider);
+      if (_isFavorited) {
+        await repo.remove(widget.word.enLabel);
+        setState(() => _isFavorited = false);
+      } else {
+        await repo.save(widget.word);
+        setState(() => _isFavorited = true);
+      }
+    } finally {
+      setState(() => _isToggling = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final formattedDate = DateFormat.yMMMd().add_Hm().format(word.timestamp);
+    final formattedDate = DateFormat.yMMMd().add_Hm().format(widget.word.timestamp);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
       child: InkWell(
-        onTap: onTap,
+        onTap: widget.onTap,
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(12),
@@ -115,7 +159,7 @@ class _HistoryListTile extends StatelessWidget {
                   width: 64,
                   height: 64,
                   child: Image.file(
-                    File(word.photoPath),
+                    File(widget.word.photoPath),
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) => Container(
                       color: Colors.grey.shade300,
@@ -130,14 +174,14 @@ class _HistoryListTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      word.enLabel,
+                      widget.word.enLabel,
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      word.esLabel,
+                      widget.word.esLabel,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.secondary,
                       ),
@@ -152,6 +196,20 @@ class _HistoryListTile extends StatelessWidget {
                   ],
                 ),
               ),
+              if (_isChecking || _isToggling)
+                const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              else
+                IconButton(
+                  icon: Icon(
+                    _isFavorited ? Icons.favorite : Icons.favorite_border,
+                    color: _isFavorited ? Colors.red : null,
+                  ),
+                  onPressed: _toggleFavorite,
+                ),
               const Icon(Icons.chevron_right),
             ],
           ),
