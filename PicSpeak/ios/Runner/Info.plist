@@ -45,5 +45,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>PicSpeak necesita acceso a la cámara para identificar objetos y crear flashcards.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>PicSpeak puede usar el micrófono para funciones de audio.</string>
 </dict>
 </plist>
