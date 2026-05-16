@@ -61,17 +61,17 @@ Chain strategy: pending
 
 ## Phase 4: Onboarding + Settings Integration
 
-- [ ] 4.1 Create `OnboardingScreen` in `lib/features/onboarding/presentation/` with 3 pages + skip
-- [ ] 4.2 Add permission education screens within onboarding flow
-- [ ] 4.3 Create `SettingsScreen` in `lib/features/app_settings/presentation/` (language, voice speed, theme)
-- [ ] 4.4 Wire onboarding guard in router: first launch routes to onboarding, then camera
-- [ ] 4.5 Wire bottom navigation across camera, favorites, history, and settings
+- [x] 4.1 Create `OnboardingScreen` in `lib/features/onboarding/presentation/` with 3 pages + skip
+- [x] 4.2 Add permission education screens within onboarding flow
+- [x] 4.3 Create `SettingsScreen` in `lib/features/app_settings/presentation/` (language, voice speed, theme)
+- [x] 4.4 Wire onboarding guard in router: first launch routes to onboarding, then camera
+- [x] 4.5 Wire bottom navigation across camera, favorites, history, and settings
 
 ## Phase 5: Testing
 
-- [ ] 5.1 Unit test `LabelMapRepository.translate` with known, unknown, and null inputs
-- [ ] 5.2 Unit test `FlashcardRepository` save/load/remove/dedup behavior
-- [ ] 5.3 Unit test `HistoryRepository` log, 5-minute dedup, and search
-- [ ] 5.4 Widget test `CameraScreen` permission granted/denied states
-- [ ] 5.5 Widget test `ResultScreen` tap-to-speak and favorite button interactions
-- [ ] 5.6 Widget test `FlashcardReviewScreen` flip animation and swipe navigation
+- [x] 5.1 Unit test `LabelMapRepository.translate` with known, unknown, and null inputs
+- [x] 5.2 Unit test `FlashcardRepository` save/load/remove/dedup behavior
+- [x] 5.3 Unit test `HistoryRepository` log, 5-minute dedup, and search
+- [x] 5.4 Widget test `CameraScreen` permission granted/denied states
+- [x] 5.5 Widget test `ResultScreen` tap-to-speak and favorite button interactions
+- [x] 5.6 Widget test `FlashcardReviewScreen` flip animation and swipe navigation
