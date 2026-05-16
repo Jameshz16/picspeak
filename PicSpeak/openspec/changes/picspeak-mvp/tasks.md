@@ -41,15 +41,15 @@ Chain strategy: pending
 
 ## Phase 2: Camera + Recognition
 
-- [ ] 2.1 Create `CameraRepository` in `lib/features/camera/data/` wrapping `CameraController`
-- [ ] 2.2 Create `CameraScreen` in `lib/features/camera/presentation/` with full-screen preview + capture button
-- [ ] 2.3 Handle camera lifecycle (dispose on background, re-init on resume)
-- [ ] 2.4 Create `MlKitRepository` in `lib/features/object_recognition/data/` with 0.7 confidence threshold
-- [ ] 2.5 Create `RecognizedWord` model in `lib/features/object_recognition/domain/`
-- [ ] 2.6 Create `ResultScreen` in `lib/features/object_recognition/presentation/` showing bilingual card + TTS + favorite
-- [ ] 2.7 Integrate TTS pronunciation buttons for EN and ES on `ResultScreen`
-- [ ] 2.8 Create `HistoryRepository` in `lib/features/word_history/data/` (JSON in shared_prefs, 5-min dedup)
-- [ ] 2.9 Create `HistoryScreen` in `lib/features/word_history/presentation/` with reverse-chronological list + search
+- [x] 2.1 Create `CameraRepository` in `lib/features/camera/data/` wrapping `CameraController`
+- [x] 2.2 Create `CameraScreen` in `lib/features/camera/presentation/` with full-screen preview + capture button
+- [x] 2.3 Handle camera lifecycle (dispose on background, re-init on resume)
+- [x] 2.4 Create `MlKitRepository` in `lib/features/object_recognition/data/` with 0.7 confidence threshold
+- [x] 2.5 Create `RecognizedWord` model in `lib/features/object_recognition/domain/`
+- [x] 2.6 Create `ResultScreen` in `lib/features/object_recognition/presentation/` showing bilingual card + TTS + favorite
+- [x] 2.7 Integrate TTS pronunciation buttons for EN and ES on `ResultScreen`
+- [x] 2.8 Create `HistoryRepository` in `lib/features/word_history/data/` (JSON in shared_prefs, 5-min dedup)
+- [x] 2.9 Create `HistoryScreen` in `lib/features/word_history/presentation/` with reverse-chronological list + search
 
 ## Phase 3: Flashcards + Review
 
