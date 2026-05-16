@@ -8,13 +8,22 @@ import '../../features/flashcard_review/presentation/flashcard_review_screen.dar
 import '../../features/word_history/presentation/history_screen.dart';
 import '../../features/app_settings/presentation/settings_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
+import '../../features/onboarding/data/onboarding_providers.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/',
-    redirect: (context, state) {
-      // TODO(1.11): Wire onboarding check once OnboardingRepository is available.
-      // For now, allow all routes.
+    redirect: (context, state) async {
+      final onboardingRepo = ref.read(onboardingRepositoryProvider);
+      final hasSeen = await onboardingRepo.hasSeenOnboarding();
+      final isOnboardingRoute = state.matchedLocation == '/onboarding';
+
+      if (!hasSeen && !isOnboardingRoute) {
+        return '/onboarding';
+      }
+      if (hasSeen && isOnboardingRoute) {
+        return '/';
+      }
       return null;
     },
     routes: [
