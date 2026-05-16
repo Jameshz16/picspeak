@@ -30,14 +30,14 @@ Chain strategy: pending
 - [ ] 1.1 Add dependencies to `pubspec.yaml` (camera, mlkit, flutter_tts, riverpod, go_router, shared_prefs, path_provider, intl)
 - [ ] 1.2 Add camera + audio permissions to `AndroidManifest.xml` and `Info.plist`
 - [ ] 1.3 Create `assets/labels_es.json` with EN→ES mapping for ~400 ML Kit labels
-- [ ] 1.4 Create `lib/app/theme.dart` with ThemeMode notifier and light/dark themes
-- [ ] 1.5 Create `lib/app/router.dart` with GoRouter routes for all screens
-- [ ] 1.6 Rewrite `lib/main.dart` to `ProviderScope` + `MaterialApp.router`
-- [ ] 1.7 Create `lib/core/services/tts_service.dart` — FlutterTts wrapper with availability + speed
-- [ ] 1.8 Create `lib/core/services/permission_service.dart` — camera permission status stream
-- [ ] 1.9 Create `lib/core/data/label_map_repository.dart` — loads `labels_es.json`, exposes `translate()`
-- [ ] 1.10 Create settings domain model + `SettingsRepository` in `lib/features/app_settings/`
-- [ ] 1.11 Create `OnboardingRepository` in `lib/features/onboarding/data/` (shared_prefs bool flag)
+- [x] 1.4 Create `lib/app/theme.dart` with ThemeMode notifier and light/dark themes
+- [x] 1.5 Create `lib/app/router.dart` with GoRouter routes for all screens
+- [x] 1.6 Rewrite `lib/main.dart` to `ProviderScope` + `MaterialApp.router`
+- [x] 1.7 Create `lib/core/services/tts_service.dart` — FlutterTts wrapper with availability + speed
+- [x] 1.8 Create `lib/core/services/permission_service.dart` — camera permission status stream
+- [x] 1.9 Create `lib/core/data/label_map_repository.dart` — loads `labels_es.json`, exposes `translate()`
+- [x] 1.10 Create settings domain model + `SettingsRepository` in `lib/features/app_settings/`
+- [x] 1.11 Create `OnboardingRepository` in `lib/features/onboarding/data/` (shared_prefs bool flag)
 
 ## Phase 2: Camera + Recognition
 
