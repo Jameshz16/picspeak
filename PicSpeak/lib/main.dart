@@ -6,8 +6,12 @@ import 'app/router.dart';
 import 'app/theme.dart';
 import 'features/app_settings/data/settings_repository_impl.dart';
 import 'features/app_settings/data/settings_providers.dart';
+import 'features/flashcard_review/data/flashcard_providers.dart';
+import 'features/flashcard_review/data/flashcard_repository_impl.dart';
 import 'features/onboarding/data/onboarding_repository_impl.dart';
 import 'features/onboarding/data/onboarding_providers.dart';
+import 'features/word_history/data/history_providers.dart';
+import 'features/word_history/data/history_repository_impl.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,12 +19,16 @@ void main() async {
 
   final onboardingRepo = OnboardingRepositoryImpl(prefs);
   final settingsRepo = SettingsRepositoryImpl(prefs);
+  final flashcardRepo = FlashcardRepositoryImpl(prefs);
+  final historyRepo = HistoryRepositoryImpl(prefs);
 
   runApp(
     ProviderScope(
       overrides: [
         onboardingRepositoryProvider.overrideWithValue(onboardingRepo),
         settingsRepositoryProvider.overrideWithValue(settingsRepo),
+        flashcardRepositoryProvider.overrideWithValue(flashcardRepo),
+        historyRepositoryProvider.overrideWithValue(historyRepo),
       ],
       child: const PicSpeakApp(),
     ),

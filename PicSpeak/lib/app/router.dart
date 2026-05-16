@@ -1,8 +1,11 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/camera/presentation/camera_screen.dart';
 import '../../features/object_recognition/presentation/result_screen.dart';
+import '../../features/object_recognition/domain/labeled_object.dart';
+import '../../features/object_recognition/domain/recognized_word.dart';
 import '../../features/flashcard_review/presentation/flashcard_list_screen.dart';
 import '../../features/flashcard_review/presentation/flashcard_review_screen.dart';
 import '../../features/word_history/presentation/history_screen.dart';
@@ -32,10 +35,22 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const CameraScreen(),
       ),
       GoRoute(
-        path: '/result/:wordId',
+        path: '/result',
         builder: (context, state) {
-          final wordId = state.pathParameters['wordId']!;
-          return ResultScreen(wordId: wordId);
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          final word = extra['word'] as RecognizedWord?;
+          final allLabels = (extra['allLabels'] as List<dynamic>?)
+              ?.whereType<LabeledObject>()
+              .toList();
+          if (word == null) {
+            return const Scaffold(
+              body: Center(child: Text('No word data provided.')),
+            );
+          }
+          return ResultScreen(
+            word: word,
+            allLabels: allLabels ?? [],
+          );
         },
       ),
       GoRoute(
