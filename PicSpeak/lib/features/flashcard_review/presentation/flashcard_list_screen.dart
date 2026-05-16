@@ -114,7 +114,7 @@ class _FlashcardListScreenState extends ConsumerState<FlashcardListScreen> {
                 onDismissed: (_) async {
                   await _removeFlashcard(word.enLabel);
                   if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    ScaffoldMessenger.of(this.context).showSnackBar(
                       SnackBar(content: Text('Removed "${word.enLabel}"')),
                     );
                   }

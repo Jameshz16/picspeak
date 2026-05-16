@@ -53,11 +53,11 @@ Chain strategy: pending
 
 ## Phase 3: Flashcards + Review
 
-- [ ] 3.1 Create `FlashcardRepository` in `lib/features/flashcard_review/data/` (save/load/remove, dedup)
-- [ ] 3.2 Create `FlashcardListScreen` in `lib/features/flashcard_review/presentation/`
-- [ ] 3.3 Create `FlashcardReviewScreen` with flip animation, swipe navigation, and progress indicator
-- [ ] 3.4 Add TTS pronunciation buttons to each side of the flashcard
-- [ ] 3.5 Add "Add to favorites" action on `HistoryScreen` entries
+- [x] 3.1 Create `FlashcardRepository` in `lib/features/flashcard_review/data/` (save/load/remove, dedup)
+- [x] 3.2 Create `FlashcardListScreen` in `lib/features/flashcard_review/presentation/`
+- [x] 3.3 Create `FlashcardReviewScreen` with flip animation, swipe navigation, and progress indicator
+- [x] 3.4 Add TTS pronunciation buttons to each side of the flashcard
+- [x] 3.5 Add "Add to favorites" action on `HistoryScreen` entries
 
 ## Phase 4: Onboarding + Settings Integration
 
