@@ -4,12 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/data/label_map_repository.dart';
 import '../../../core/services/tts_service.dart';
 import '../../flashcard_review/data/flashcard_providers.dart';
 import '../../word_history/data/history_providers.dart';
 import '../domain/labeled_object.dart';
 import '../domain/recognized_word.dart';
+import 'object_overlay.dart';
 import 'tts_play_notifier.dart';
+
 
 class ResultScreen extends ConsumerStatefulWidget {
   final RecognizedWord word;
@@ -30,13 +33,15 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
   bool _esAvailable = false;
   bool _isSaving = false;
   bool _isSaved = false;
+  late RecognizedWord _currentWord;
 
   @override
   void initState() {
     super.initState();
+    _currentWord = widget.word;
     _checkTtsAvailability();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(historyRepositoryProvider).log(widget.word);
+      ref.read(historyRepositoryProvider).log(_currentWord);
     });
   }
 
@@ -56,7 +61,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
     setState(() => _isSaving = true);
     try {
       final repo = ref.read(flashcardRepositoryProvider);
-      final exists = await repo.exists(widget.word.enLabel);
+      final exists = await repo.exists(_currentWord.enLabel);
       if (exists) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -67,7 +72,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
         }
         setState(() => _isSaved = true);
       } else {
-        await repo.save(widget.word);
+        await repo.save(_currentWord);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Added to favorites!')),
@@ -88,11 +93,31 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
     }
   }
 
+  void _selectLabel(LabeledObject label) async {
+    final labelMapRepo = await ref.read(labelMapProvider.future);
+    final esTranslation = labelMapRepo.translate(label.label);
+    final newWord = RecognizedWord(
+      enLabel: label.label,
+      esLabel: esTranslation ?? 'Sin traducción',
+      confidence: label.confidence,
+      photoPath: _currentWord.photoPath,
+      timestamp: DateTime.now(),
+      boundingBox: label.boundingBox,
+    );
+    setState(() {
+      _currentWord = newWord;
+      _isSaved = false;
+    });
+    // Log to history
+    ref.read(historyRepositoryProvider).log(newWord);
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final speakingLocale = ref.watch(ttsPlayNotifierProvider);
-    final hasTranslation = widget.word.esLabel != 'Traducción no disponible';
+    final hasTranslation = _currentWord.esLabel != 'Sin traducción' &&
+        _currentWord.esLabel != 'Traducción no disponible';
 
     return Scaffold(
       appBar: AppBar(
@@ -107,36 +132,33 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Photo with overlay
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child: AspectRatio(
                 aspectRatio: 4 / 3,
-                child: Image.file(
-                  File(widget.word.photoPath),
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    color: Colors.grey.shade300,
-                    child: const Center(
-                      child: Icon(Icons.broken_image, size: 48),
-                    ),
-                  ),
+                child: ObjectOverlay(
+                  photoPath: _currentWord.photoPath,
+                  boundingBox: _currentWord.boundingBox,
                 ),
               ),
             ),
             const SizedBox(height: 24),
+
+            // Primary word card
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
                     Text(
-                      widget.word.enLabel,
+                      _currentWord.enLabel,
                       style: theme.textTheme.headlineMedium,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      widget.word.esLabel,
+                      _currentWord.esLabel,
                       style: theme.textTheme.headlineSmall?.copyWith(
                         color: hasTranslation
                             ? theme.colorScheme.secondary
@@ -153,7 +175,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                     ],
                     const SizedBox(height: 12),
                     Text(
-                      'Confidence: ${(widget.word.confidence * 100).toStringAsFixed(1)}%',
+                      'Confidence: ${(_currentWord.confidence * 100).toStringAsFixed(1)}%',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
@@ -163,13 +185,15 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
               ),
             ),
             const SizedBox(height: 24),
+
+            // TTS buttons
             Row(
               children: [
                 Expanded(
                   child: _TtsButton(
                     label: 'Escuchar en inglés',
                     locale: 'en-US',
-                    text: widget.word.enLabel,
+                    text: _currentWord.enLabel,
                     available: _enAvailable,
                     isSpeaking: speakingLocale == 'en-US',
                     onSpeak: (text, locale) => ref
@@ -182,7 +206,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                   child: _TtsButton(
                     label: 'Escuchar en español',
                     locale: 'es-ES',
-                    text: widget.word.esLabel,
+                    text: _currentWord.esLabel,
                     available: _esAvailable && hasTranslation,
                     isSpeaking: speakingLocale == 'es-ES',
                     onSpeak: (text, locale) => ref
@@ -193,6 +217,8 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
               ],
             ),
             const SizedBox(height: 24),
+
+            // Favorite button
             ElevatedButton.icon(
               onPressed: _isSaving || _isSaved ? null : _onFavorite,
               icon: Icon(_isSaved ? Icons.favorite : Icons.favorite_border),
@@ -201,6 +227,8 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
               ),
             ),
             const SizedBox(height: 16),
+
+            // Other recognized labels — tappable to switch
             if (widget.allLabels.length > 1) ...[
               const Text(
                 'Also recognized:',
@@ -210,16 +238,22 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: widget.allLabels.skip(1).map((label) {
-                  return Chip(
+                children: widget.allLabels.skip(1).take(5).map((label) {
+                  final isSelected = label.label == _currentWord.enLabel;
+                  return ChoiceChip(
                     label: Text(
                       '${label.label} (${(label.confidence * 100).toStringAsFixed(0)}%)',
                     ),
+                    selected: isSelected,
+                    onSelected: isSelected ? null : (_) => _selectLabel(label),
+                    selectedColor: theme.colorScheme.primaryContainer,
                   );
                 }).toList(),
               ),
               const SizedBox(height: 24),
             ],
+
+            // Scan again
             OutlinedButton.icon(
               onPressed: () => context.go('/'),
               icon: const Icon(Icons.camera_alt),

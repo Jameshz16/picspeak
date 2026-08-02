@@ -20,6 +20,11 @@ class _AppShellState extends State<AppShell> {
       path: '/',
     ),
     _NavDestination(
+      label: 'Categorías',
+      icon: Icons.category,
+      path: '/categories',
+    ),
+    _NavDestination(
       label: 'Favoritos',
       icon: Icons.favorite,
       path: '/favorites',
@@ -30,7 +35,7 @@ class _AppShellState extends State<AppShell> {
       path: '/history',
     ),
     _NavDestination(
-      label: 'Configuración',
+      label: 'Ajustes',
       icon: Icons.settings,
       path: '/settings',
     ),

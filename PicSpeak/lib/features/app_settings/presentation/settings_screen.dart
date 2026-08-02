@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../app/theme.dart';
+import '../../auth/data/auth_providers.dart';
+import '../../auth/domain/auth_repository.dart';
 import '../domain/app_settings.dart';
 import '../data/settings_providers.dart';
 
@@ -179,6 +182,29 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               ],
             ),
+          ),
+        ),
+        const SizedBox(height: 32),
+        _SectionHeader(title: 'Learning'),
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.bar_chart),
+            title: const Text('My Progress'),
+            subtitle: const Text('View your learning stats'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/stats'),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.logout, color: Colors.red),
+            title: const Text('Sign Out', style: TextStyle(color: Colors.red)),
+            onTap: () async {
+              final repo = ref.read(authRepositoryProvider);
+              await repo.signOut();
+              if (context.mounted) context.go('/login');
+            },
           ),
         ),
         const SizedBox(height: 32),

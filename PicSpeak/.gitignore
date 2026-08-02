@@ -46,3 +46,7 @@ app.*.map.json
 
 # SDD artifacts
 .atl/
+
+# Firebase credentials (contains API keys — never commit)
+**/google-services.json
+lib/firebase_options.dart
