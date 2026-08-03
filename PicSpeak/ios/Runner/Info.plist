@@ -49,5 +49,7 @@
 	<string>PicSpeak necesita acceso a la cámara para identificar objetos y crear flashcards.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>PicSpeak puede usar el micrófono para funciones de audio.</string>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>PicSpeak sends reminders to review your vocabulary words</string>
 </dict>
 </plist>
