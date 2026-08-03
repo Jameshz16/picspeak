@@ -1,3 +1,5 @@
+import '../../app_settings/domain/app_settings.dart';
+
 abstract class NotificationRepository {
   /// Request notification permission from the OS.
   /// Returns true if permission was granted.
@@ -18,4 +20,7 @@ abstract class NotificationRepository {
 
   /// Cancel scheduled notifications by type (e.g., 'srs', 'streak').
   Future<void> cancelByType(String type);
+
+  /// Reschedule all notifications based on current settings.
+  Future<void> rescheduleAll({required AppSettings settings});
 }

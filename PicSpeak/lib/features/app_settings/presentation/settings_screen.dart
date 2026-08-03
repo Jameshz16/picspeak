@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme.dart';
 import '../../auth/data/auth_providers.dart';
 import '../../auth/domain/auth_repository.dart';
+import '../../notifications/presentation/notification_settings_section.dart';
 import '../domain/app_settings.dart';
 import '../data/settings_providers.dart';
 
@@ -184,6 +185,8 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
         ),
+        const SizedBox(height: 32),
+        const NotificationSettingsSection(),
         const SizedBox(height: 32),
         _SectionHeader(title: 'Learning'),
         Card(
