@@ -43,11 +43,11 @@ Chain strategy: feature-branch-chain
 
 ## Phase 2: Data Layer — Scheduler, Tracker, Permissions, FCM (PR 2)
 
-- [ ] 2.1 Create `lib/features/notifications/data/usage_time_tracker.dart` — `recordOpen()` stores timestamp in SharedPreferences; `getScheduleTime()` computes modal hour from last 30 opens, subtracts 30min, falls back to 16:00 if <5 opens
-- [ ] 2.2 Create `lib/features/notifications/data/notification_permissions.dart` — Android 13+ `POST_NOTIFICATIONS` request via `permission_handler`; iOS system dialog; graceful denial handling
-- [ ] 2.3 Create `lib/features/notifications/data/notification_repository_impl.dart` — wraps `flutter_local_notifications`; init with Android channel + iOS settings; `zonedSchedule` for SRS/streak; quiet hours clamp (21:00–08:00 → 08:00); daily cap via date-keyed SharedPreferences (`notif_sent_{type}_{YYYY-MM-DD}`); `cancelAll()`/`cancelByType()`
-- [ ] 2.4 Create `lib/features/notifications/data/fcm_token_handler.dart` — `firebase_messaging` token listener; writes to Firestore `users/{uid}/fcmToken`; no campaign sending
-- [ ] 2.5 Create `lib/features/notifications/data/notification_providers.dart` — Riverpod providers for `NotificationRepository`, `UsageTimeTracker`, `FcmTokenHandler`, `NotificationPermissions`
+- [x] 2.1 Create `lib/features/notifications/data/usage_time_tracker.dart` — `recordOpen()` stores timestamp in SharedPreferences; `getScheduleTime()` computes modal hour from last 30 opens, subtracts 30min, falls back to 16:00 if <5 opens
+- [x] 2.2 Create `lib/features/notifications/data/notification_permissions.dart` — Android 13+ `POST_NOTIFICATIONS` request via `permission_handler`; iOS system dialog; graceful denial handling
+- [x] 2.3 Create `lib/features/notifications/data/notification_repository_impl.dart` — wraps `flutter_local_notifications`; init with Android channel + iOS settings; `zonedSchedule` for SRS/streak; quiet hours clamp (21:00–08:00 → 08:00); daily cap via date-keyed SharedPreferences (`notif_sent_{type}_{YYYY-MM-DD}`); `cancelAll()`/`cancelByType()`
+- [x] 2.4 Create `lib/features/notifications/data/fcm_token_handler.dart` — `firebase_messaging` token listener; writes to Firestore `users/{uid}/fcmToken`; no campaign sending
+- [x] 2.5 Create `lib/features/notifications/data/notification_providers.dart` — Riverpod providers for `NotificationRepository`, `UsageTimeTracker`, `FcmTokenHandler`, `NotificationPermissions`
 
 **Verification**: Unit tests for `UsageTimeTracker` modal-hour logic; unit test for quiet-hours clamp; mock-based test for `NotificationRepositoryImpl.scheduleSrsReminder` calling `zonedSchedule` with correct args.
 
