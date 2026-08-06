@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tz;
 
+import 'package:picspeak/features/app_settings/domain/app_settings.dart';
 import 'package:picspeak/features/flashcard_review/domain/flashcard_repository.dart';
 import 'package:picspeak/features/notifications/data/notification_permissions.dart';
 import 'package:picspeak/features/notifications/data/notification_repository_impl.dart';
@@ -16,6 +17,42 @@ import 'package:picspeak/features/stats/domain/learning_stats.dart';
 // ---------------------------------------------------------------------------
 // Fakes
 // ---------------------------------------------------------------------------
+
+/// Fake for [FlutterLocalNotificationsPlugin] that tracks cancel calls.
+///
+/// The real plugin is a concrete singleton (factory constructor) so we use
+/// `implements` + `noSuchMethod` to intercept cancel/cancelAll without
+/// touching the platform. All other plugin methods are no-ops via noSuchMethod.
+class FakeFlutterLocalNotificationsPlugin
+    implements FlutterLocalNotificationsPlugin {
+  /// IDs passed to [cancel].
+  final List<int> cancelledIds = [];
+
+  /// Whether [cancelAll] was invoked.
+  bool cancelAllCalled = false;
+
+  /// Full cancel-call log: (id, tag) tuples.
+  final List<(int id, String? tag)> cancelLog = [];
+
+  @override
+  Future<void> cancel(int id, {String? tag}) async {
+    cancelledIds.add(id);
+    cancelLog.add((id, tag));
+  }
+
+  @override
+  Future<void> cancelAll() async {
+    cancelAllCalled = true;
+  }
+
+  /// Delegates everything else to noSuchMethod (no-op returns).
+  @override
+  dynamic noSuchMethod(Invocation invocation) {
+    // Return Future.value(null) for all unimplemented methods since
+    // plugin methods return Future<void>.
+    return Future.value(null);
+  }
+}
 
 class FakeUsageTimeTracker extends UsageTimeTracker {
   TimeOfDay _scheduleTime = const TimeOfDay(hour: 12, minute: 0);
@@ -87,13 +124,15 @@ NotificationRepositoryImpl _buildRepo({
   required SharedPreferences prefs,
   required FakeUsageTimeTracker tracker,
   required FakeNotificationPermissions permissions,
+  FlutterLocalNotificationsPlugin? plugin,
+  FakeFlashcardRepository? flashcardRepo,
 }) {
   return NotificationRepositoryImpl(
-    notificationsPlugin: FlutterLocalNotificationsPlugin(),
+    notificationsPlugin: plugin ?? FlutterLocalNotificationsPlugin(),
     prefs: prefs,
     usageTimeTracker: tracker,
     permissions: permissions,
-    flashcardRepository: FakeFlashcardRepository(),
+    flashcardRepository: flashcardRepo ?? FakeFlashcardRepository(),
     statsRepository: FakeStatsRepository(prefs),
   );
 }
@@ -323,6 +362,197 @@ void main() {
         final time = await tracker.getScheduleTime();
         expect(time.hour, equals(7));
         // The impl will clamp this to 08:00 internally
+      });
+    });
+
+    // -- rescheduleAll cancellation contract ---------------------------------
+    //
+    // These tests use [FakeFlutterLocalNotificationsPlugin] to verify that
+    // rescheduleAll properly cancels notifications by type before
+    // re-scheduling, and cancels disabled sub-feature notifications.
+
+    group('rescheduleAll() cancellation contract', () {
+      late FakeFlutterLocalNotificationsPlugin fakePlugin;
+
+      setUp(() {
+        fakePlugin = FakeFlutterLocalNotificationsPlugin();
+      });
+
+      test('notificationsEnabled=false → cancelAll called', () async {
+        final repo = _buildRepo(
+          prefs: prefs,
+          tracker: tracker,
+          permissions: permissions,
+          plugin: fakePlugin,
+        );
+
+        await repo.rescheduleAll(
+          settings: const AppSettings(notificationsEnabled: false),
+        );
+
+        expect(fakePlugin.cancelAllCalled, isTrue);
+        // No individual cancel calls — cancelAll covers everything
+        expect(fakePlugin.cancelledIds, isEmpty);
+      });
+
+      test(
+          'srsRemindersEnabled=false → cancel(0) called (SRS id)',
+          () async {
+        final repo = _buildRepo(
+          prefs: prefs,
+          tracker: tracker,
+          permissions: permissions,
+          plugin: fakePlugin,
+        );
+
+        await repo.rescheduleAll(
+          settings: const AppSettings(
+            notificationsEnabled: true,
+            srsRemindersEnabled: false,
+            streakRemindersEnabled: false,
+          ),
+        );
+
+        // Should cancel SRS (id=0) because it's disabled
+        expect(fakePlugin.cancelledIds, contains(0));
+        // Should cancel streak (id=1) because it's disabled
+        expect(fakePlugin.cancelledIds, contains(1));
+        expect(fakePlugin.cancelAllCalled, isFalse);
+      });
+
+      test(
+          'streakRemindersEnabled=false → cancel(1) called (streak id)',
+          () async {
+        final repo = _buildRepo(
+          prefs: prefs,
+          tracker: tracker,
+          permissions: permissions,
+          plugin: fakePlugin,
+        );
+
+        await repo.rescheduleAll(
+          settings: const AppSettings(
+            notificationsEnabled: true,
+            srsRemindersEnabled: false,
+            streakRemindersEnabled: false,
+          ),
+        );
+
+        // Both disabled → both cancelled
+        expect(fakePlugin.cancelledIds, contains(0));
+        expect(fakePlugin.cancelledIds, contains(1));
+      });
+
+      test(
+          'both sub-features disabled → both ids cancelled',
+          () async {
+        final repo = _buildRepo(
+          prefs: prefs,
+          tracker: tracker,
+          permissions: permissions,
+          plugin: fakePlugin,
+        );
+
+        await repo.rescheduleAll(
+          settings: const AppSettings(
+            notificationsEnabled: true,
+            srsRemindersEnabled: false,
+            streakRemindersEnabled: false,
+          ),
+        );
+
+        expect(fakePlugin.cancelledIds, containsAll([0, 1]));
+      });
+
+      test(
+          'srs enabled → cancel(0) called BEFORE schedule (cancel-then-schedule)',
+          () async {
+        final flashcardRepo = FakeFlashcardRepository()..dueCount = 3;
+        final repo = _buildRepo(
+          prefs: prefs,
+          tracker: tracker,
+          permissions: permissions,
+          plugin: fakePlugin,
+          flashcardRepo: flashcardRepo,
+        );
+
+        await repo.rescheduleAll(
+          settings: const AppSettings(
+            notificationsEnabled: true,
+            srsRemindersEnabled: true,
+            streakRemindersEnabled: false,
+          ),
+        );
+
+        // cancel(0) should appear in the log (cancel-before-schedule)
+        expect(fakePlugin.cancelLog.any((entry) => entry.$1 == 0), isTrue);
+        // Streak is disabled, so cancel(1) should also appear
+        expect(fakePlugin.cancelledIds, contains(1));
+      });
+
+      test(
+          'streak enabled → cancel(1) called BEFORE schedule',
+          () async {
+        // Need streak >= 2 to pass guard clause
+        await prefs.setInt('study_streak', 5);
+        final repo = _buildRepo(
+          prefs: prefs,
+          tracker: tracker,
+          permissions: permissions,
+          plugin: fakePlugin,
+        );
+
+        await repo.rescheduleAll(
+          settings: const AppSettings(
+            notificationsEnabled: true,
+            srsRemindersEnabled: false,
+            streakRemindersEnabled: true,
+          ),
+        );
+
+        // cancel(1) should appear (cancel-before-schedule for streak)
+        expect(fakePlugin.cancelLog.any((entry) => entry.$1 == 1), isTrue);
+        // SRS is disabled, so cancel(0) should also appear
+        expect(fakePlugin.cancelledIds, contains(0));
+      });
+
+      test('re-scheduling same type cancels then schedules (no duplicates)',
+          () async {
+        final flashcardRepo = FakeFlashcardRepository()..dueCount = 5;
+        final repo = _buildRepo(
+          prefs: prefs,
+          tracker: tracker,
+          permissions: permissions,
+          plugin: fakePlugin,
+          flashcardRepo: flashcardRepo,
+        );
+
+        // First reschedule
+        await repo.rescheduleAll(
+          settings: const AppSettings(
+            notificationsEnabled: true,
+            srsRemindersEnabled: true,
+            streakRemindersEnabled: false,
+          ),
+        );
+
+        final firstCancelCount = fakePlugin.cancelLog.length;
+
+        // Second reschedule — should cancel again before re-scheduling
+        await repo.rescheduleAll(
+          settings: const AppSettings(
+            notificationsEnabled: true,
+            srsRemindersEnabled: true,
+            streakRemindersEnabled: false,
+          ),
+        );
+
+        // More cancel calls should have been made
+        expect(fakePlugin.cancelLog.length, greaterThan(firstCancelCount));
+        // cancel(0) should appear twice (once per reschedule)
+        final srsCancels =
+            fakePlugin.cancelLog.where((e) => e.$1 == 0).length;
+        expect(srsCancels, equals(2));
       });
     });
   });

@@ -196,6 +196,12 @@ class NotificationRepositoryImpl implements NotificationRepository {
   }
 
   /// Reschedules all notifications based on current settings and data.
+  ///
+  /// Cancellation contract:
+  /// - When notificationsEnabled is false → cancel all (master kill switch).
+  /// - When a sub-feature is disabled → cancel its specific notification.
+  /// - When a sub-feature is enabled → cancel first, then schedule fresh
+  ///   (avoids duplicate recurring alarms on reconfiguration).
   Future<void> rescheduleAll({
     required AppSettings settings,
   }) async {
@@ -204,18 +210,26 @@ class NotificationRepositoryImpl implements NotificationRepository {
       return;
     }
 
-    // Schedule SRS reminder if enabled
+    // --- SRS ---
     if (settings.srsRemindersEnabled) {
+      // Cancel any existing SRS alarm before scheduling a fresh one
+      await cancelByType('srs');
       final dueCount = await _flashcardRepository.getDueCount();
       await scheduleSrsReminder(dueCount, settings: settings);
+    } else {
+      // Sub-feature explicitly disabled → ensure the recurring alarm is dead
+      await cancelByType('srs');
     }
 
-    // Schedule streak reminder if enabled
+    // --- Streak ---
     if (settings.streakRemindersEnabled) {
-      // StatsRepository doesn't expose streak directly; we need to compute it
-      // For now, we'll read from SharedPreferences
+      // Cancel any existing streak alarm before scheduling a fresh one
+      await cancelByType('streak');
       final streak = _prefs.getInt('study_streak') ?? 0;
       await scheduleStreakReminder(streak, settings: settings);
+    } else {
+      // Sub-feature explicitly disabled → ensure the recurring alarm is dead
+      await cancelByType('streak');
     }
   }
 
