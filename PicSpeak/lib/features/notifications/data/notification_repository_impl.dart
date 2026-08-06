@@ -1,12 +1,14 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tz;
 
 import '../../app_settings/domain/app_settings.dart';
 import '../../flashcard_review/domain/flashcard_repository.dart';
-import '../../stats/data/stats_repository.dart';
 import '../domain/notification_repository.dart';
+import '../domain/notification_permission_status.dart';
 import 'notification_permissions.dart';
 import 'usage_time_tracker.dart';
 
@@ -16,12 +18,12 @@ class NotificationRepositoryImpl implements NotificationRepository {
   final UsageTimeTracker _usageTimeTracker;
   final NotificationPermissions _permissions;
   final FlashcardRepository _flashcardRepository;
-  final StatsRepository _statsRepository;
 
   static const _androidChannelId = 'pic_speak_reminders';
   static const _androidChannelName = 'PicSpeak Reminders';
   static const _srsNotificationId = 0;
   static const _streakNotificationId = 1;
+  static bool _timezoneInitialized = false;
 
   NotificationRepositoryImpl({
     required FlutterLocalNotificationsPlugin notificationsPlugin,
@@ -29,17 +31,26 @@ class NotificationRepositoryImpl implements NotificationRepository {
     required UsageTimeTracker usageTimeTracker,
     required NotificationPermissions permissions,
     required FlashcardRepository flashcardRepository,
-    required StatsRepository statsRepository,
   })  : _notificationsPlugin = notificationsPlugin,
         _prefs = prefs,
         _usageTimeTracker = usageTimeTracker,
         _permissions = permissions,
-        _flashcardRepository = flashcardRepository,
-        _statsRepository = statsRepository;
+        _flashcardRepository = flashcardRepository;
 
-  /// Initializes time zones. Must be called once at app startup.
-  static void initialize() {
-    tz.initializeTimeZones();
+  /// Initializes time zones and sets the local timezone from the device.
+  /// Must be called once at app startup. Safe to call multiple times.
+  static Future<void> initialize() async {
+    if (_timezoneInitialized) return;
+    try {
+      tz.initializeTimeZones();
+      final timeZoneName = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(timeZoneName));
+      _timezoneInitialized = true;
+    } catch (e) {
+      // If timezone initialization fails, continue with UTC (default).
+      // Notifications will still work but may fire at wrong wall‑clock time.
+      debugPrint('NotificationRepositoryImpl: timezone init failed: $e');
+    }
   }
 
   /// Initializes the notification plugin with platform-specific settings.
@@ -82,12 +93,17 @@ class NotificationRepositoryImpl implements NotificationRepository {
   }
 
   @override
+  Future<NotificationPermissionStatus> requestPermissionDetailed() async {
+    return _permissions.requestPermission();
+  }
+
+  @override
   Future<bool> getPermissionStatus() async {
     return _permissions.isGranted;
   }
 
   @override
-  Future<void> scheduleSrsReminder(int dueCount) async {
+  Future<void> scheduleSrsReminder(int dueCount, {AppSettings? settings}) async {
     if (dueCount <= 0) return;
 
     final hasPermission = await getPermissionStatus();
@@ -98,13 +114,16 @@ class NotificationRepositoryImpl implements NotificationRepository {
     final capKey = 'notif_sent_srs_$today';
     if (_prefs.getBool(capKey) == true) return;
 
-    // Get schedule time
-    final scheduleTime = await _getScheduledTime();
+    // Get schedule time (customScheduleTime overrides learned time)
+    final scheduleTime = await _getScheduledTime(
+      customScheduleTime: settings?.customScheduleTime,
+    );
 
-    // Apply quiet hours
-    final adjustedTime = _applyQuietHours(scheduleTime);
+    // Apply quiet hours (only when quietHoursEnabled is true)
+    final quietEnabled = settings?.quietHoursEnabled ?? true;
+    final adjustedTime = _applyQuietHours(scheduleTime, enabled: quietEnabled);
 
-    // Schedule notification
+    // Schedule notification (daily recurring via DateTimeComponents.time)
     final scheduledDate = _nextInstanceOfTime(adjustedTime);
 
     await _notificationsPlugin.zonedSchedule(
@@ -124,13 +143,14 @@ class NotificationRepositoryImpl implements NotificationRepository {
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: DateTimeComponents.time,
     );
 
     await _prefs.setBool(capKey, true);
   }
 
   @override
-  Future<void> scheduleStreakReminder(int streakDays) async {
+  Future<void> scheduleStreakReminder(int streakDays, {AppSettings? settings}) async {
     if (streakDays < 2) return;
 
     final hasPermission = await getPermissionStatus();
@@ -141,13 +161,16 @@ class NotificationRepositoryImpl implements NotificationRepository {
     final capKey = 'notif_sent_streak_$today';
     if (_prefs.getBool(capKey) == true) return;
 
-    // Get schedule time
-    final scheduleTime = await _getScheduledTime();
+    // Get schedule time (customScheduleTime overrides learned time)
+    final scheduleTime = await _getScheduledTime(
+      customScheduleTime: settings?.customScheduleTime,
+    );
 
-    // Apply quiet hours
-    final adjustedTime = _applyQuietHours(scheduleTime);
+    // Apply quiet hours (only when quietHoursEnabled is true)
+    final quietEnabled = settings?.quietHoursEnabled ?? true;
+    final adjustedTime = _applyQuietHours(scheduleTime, enabled: quietEnabled);
 
-    // Schedule notification
+    // Schedule notification (daily recurring via DateTimeComponents.time)
     final scheduledDate = _nextInstanceOfTime(adjustedTime);
 
     await _notificationsPlugin.zonedSchedule(
@@ -167,6 +190,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: DateTimeComponents.time,
     );
 
     await _prefs.setBool(capKey, true);
@@ -186,7 +210,14 @@ class NotificationRepositoryImpl implements NotificationRepository {
     }
   }
 
+  @override
   /// Reschedules all notifications based on current settings and data.
+  ///
+  /// Cancellation contract:
+  /// - When notificationsEnabled is false → cancel all (master kill switch).
+  /// - When a sub-feature is disabled → cancel its specific notification.
+  /// - When a sub-feature is enabled → cancel first, then schedule fresh
+  ///   (avoids duplicate recurring alarms on reconfiguration).
   Future<void> rescheduleAll({
     required AppSettings settings,
   }) async {
@@ -195,26 +226,50 @@ class NotificationRepositoryImpl implements NotificationRepository {
       return;
     }
 
-    // Schedule SRS reminder if enabled
+    // --- SRS ---
     if (settings.srsRemindersEnabled) {
+      // Cancel any existing SRS alarm before scheduling a fresh one
+      await cancelByType('srs');
       final dueCount = await _flashcardRepository.getDueCount();
-      await scheduleSrsReminder(dueCount);
+      await scheduleSrsReminder(dueCount, settings: settings);
+    } else {
+      // Sub-feature explicitly disabled → ensure the recurring alarm is dead
+      await cancelByType('srs');
     }
 
-    // Schedule streak reminder if enabled
+    // --- Streak ---
     if (settings.streakRemindersEnabled) {
-      // StatsRepository doesn't expose streak directly; we need to compute it
-      // For now, we'll read from SharedPreferences
+      // Cancel any existing streak alarm before scheduling a fresh one
+      await cancelByType('streak');
       final streak = _prefs.getInt('study_streak') ?? 0;
-      await scheduleStreakReminder(streak);
+      await scheduleStreakReminder(streak, settings: settings);
+    } else {
+      // Sub-feature explicitly disabled → ensure the recurring alarm is dead
+      await cancelByType('streak');
     }
   }
 
-  Future<TimeOfDay> _getScheduledTime() async {
+  Future<TimeOfDay> _getScheduledTime({String? customScheduleTime}) async {
+    // If a custom schedule time is set (e.g. "19:30"), parse and use it directly
+    if (customScheduleTime != null && customScheduleTime.isNotEmpty) {
+      final parts = customScheduleTime.split(':');
+      if (parts.length == 2) {
+        final hour = int.tryParse(parts[0]);
+        final minute = int.tryParse(parts[1]);
+        if (hour != null && minute != null && hour >= 0 && hour <= 23) {
+          return TimeOfDay(hour: hour, minute: minute.clamp(0, 59));
+        }
+      }
+    }
+
+    // Fall back to learned schedule time from UsageTimeTracker
     return _usageTimeTracker.getScheduleTime();
   }
 
-  TimeOfDay _applyQuietHours(TimeOfDay time) {
+  TimeOfDay _applyQuietHours(TimeOfDay time, {bool enabled = true}) {
+    // Only enforce quiet hours clamp when the feature is enabled
+    if (!enabled) return time;
+
     final hour = time.hour;
 
     // If time is between 21:00 and 08:00, defer to 08:00

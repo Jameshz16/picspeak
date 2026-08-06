@@ -21,7 +21,6 @@ import 'features/notifications/data/notification_repository_impl.dart';
 import 'features/notifications/data/usage_time_tracker.dart';
 import 'features/onboarding/data/onboarding_repository_impl.dart';
 import 'features/onboarding/data/onboarding_providers.dart';
-import 'features/stats/data/stats_repository.dart';
 import 'features/word_history/data/history_providers.dart';
 import 'features/word_history/data/history_repository_impl.dart';
 
@@ -38,11 +37,9 @@ void main() async {
   final settingsRepo = SettingsRepositoryImpl(prefs);
   final flashcardRepo = FlashcardRepositoryImpl(prefs);
   final historyRepo = HistoryRepositoryImpl(prefs);
-  final statsRepo = StatsRepository(prefs);
 
-  // Notification infrastructure
-  NotificationRepositoryImpl.initialize();
-
+  // Notification infrastructure (non-fatal on failure)
+  bool launchedFromNotification = false;
   final notificationPlugin = FlutterLocalNotificationsPlugin();
   final usageTimeTracker = UsageTimeTracker(prefs);
   final permissions = NotificationPermissions();
@@ -53,26 +50,42 @@ void main() async {
     usageTimeTracker: usageTimeTracker,
     permissions: permissions,
     flashcardRepository: flashcardRepo,
-    statsRepository: statsRepo,
   );
-  await notificationRepo.init();
 
-  // Check if app was launched from a notification tap
-  final launchDetails =
-      await notificationPlugin.getNotificationAppLaunchDetails();
-  final launchedFromNotification =
-      launchDetails?.didNotificationLaunchApp ?? false;
+  // Record app open for smart scheduling (independent of notification state).
+  // Guarded separately so a prefs failure never becomes an unhandled async error.
+  try {
+    await usageTimeTracker.recordOpen();
+  } catch (e) {
+    debugPrint('Usage time tracker recordOpen failed: $e');
+  }
 
-  // Record app open for smart scheduling
-  await usageTimeTracker.recordOpen();
+  // Notification infrastructure init (non-fatal on failure)
+  try {
+    await NotificationRepositoryImpl.initialize();
+    await notificationRepo.init();
 
-  // Initialize FCM token handler (silent if no user logged in)
+    // Check if app was launched from a notification tap
+    final launchDetails =
+        await notificationPlugin.getNotificationAppLaunchDetails();
+    launchedFromNotification =
+        launchDetails?.didNotificationLaunchApp ?? false;
+  } catch (e) {
+    // If notification init fails, continue without notifications.
+    debugPrint('Notification init failed: $e');
+  }
+
+  // Initialize FCM token handler (silent if no user logged in).
+  // Attach catchError so async errors from getToken() never escape as
+  // unhandled Futures — making the "non-fatal FCM init" guarantee true.
   final fcmHandler = FcmTokenHandler(
     messaging: FirebaseMessaging.instance,
     auth: FirebaseAuth.instance,
     firestore: FirebaseFirestore.instance,
   );
-  fcmHandler.init(); // unawaited — fire and forget
+  fcmHandler.init().catchError((e) {
+    debugPrint('FCM token handler async error: $e');
+  });
 
   runApp(
     ProviderScope(
