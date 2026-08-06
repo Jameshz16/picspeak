@@ -11,8 +11,6 @@ import 'package:picspeak/features/notifications/data/notification_permissions.da
 import 'package:picspeak/features/notifications/data/notification_repository_impl.dart';
 import 'package:picspeak/features/notifications/data/usage_time_tracker.dart';
 import 'package:picspeak/features/object_recognition/domain/recognized_word.dart';
-import 'package:picspeak/features/stats/data/stats_repository.dart';
-import 'package:picspeak/features/stats/domain/learning_stats.dart';
 
 // ---------------------------------------------------------------------------
 // Fakes
@@ -34,6 +32,9 @@ class FakeFlutterLocalNotificationsPlugin
   /// Full cancel-call log: (id, tag) tuples.
   final List<(int id, String? tag)> cancelLog = [];
 
+  /// Notification IDs passed to [zonedSchedule].
+  final List<int> scheduledIds = [];
+
   @override
   Future<void> cancel(int id, {String? tag}) async {
     cancelledIds.add(id);
@@ -43,6 +44,22 @@ class FakeFlutterLocalNotificationsPlugin
   @override
   Future<void> cancelAll() async {
     cancelAllCalled = true;
+  }
+
+  @override
+  Future<void> zonedSchedule(
+    int id,
+    String? title,
+    String? body,
+    tz.TZDateTime scheduledDate,
+    NotificationDetails notificationDetails, {
+    required AndroidScheduleMode androidScheduleMode,
+    required UILocalNotificationDateInterpretation
+        uiLocalNotificationDateInterpretation,
+    DateTimeComponents? matchDateTimeComponents,
+    String? payload,
+  }) async {
+    scheduledIds.add(id);
   }
 
   /// Delegates everything else to noSuchMethod (no-op returns).
@@ -97,25 +114,6 @@ class FakeFlashcardRepository implements FlashcardRepository {
   }) async {}
 }
 
-class FakeStatsRepository extends StatsRepository {
-  FakeStatsRepository(super.prefs);
-  @override
-  Future<LearningStats> computeStats({
-    required FlashcardRepository flashcardRepo,
-    required dynamic historyRepo,
-  }) async =>
-      const LearningStats(
-        totalFavorites: 0,
-        totalScanned: 0,
-        dueToday: 0,
-        reviewedToday: 0,
-        masteredCount: 0,
-        streakDays: 0,
-      );
-  @override
-  void recordStudySession({int reviewedCount = 0}) {}
-}
-
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -133,7 +131,6 @@ NotificationRepositoryImpl _buildRepo({
     usageTimeTracker: tracker,
     permissions: permissions,
     flashcardRepository: flashcardRepo ?? FakeFlashcardRepository(),
-    statsRepository: FakeStatsRepository(prefs),
   );
 }
 
@@ -162,15 +159,25 @@ void main() {
     // -- scheduleSrsReminder guard clauses -----------------------------------
 
     group('scheduleSrsReminder() guard clauses', () {
+      late FakeFlutterLocalNotificationsPlugin fakePlugin;
+
+      setUp(() {
+        fakePlugin = FakeFlutterLocalNotificationsPlugin();
+      });
+
       test('does nothing when dueCount is 0', () async {
         final repo = _buildRepo(
           prefs: prefs,
           tracker: tracker,
           permissions: permissions,
+          plugin: fakePlugin,
         );
-        // Returns early — no platform call
         await repo.scheduleSrsReminder(0);
-        expect(true, isTrue);
+        // zonedSchedule must not be called — early return
+        expect(fakePlugin.scheduledIds, isEmpty);
+        // Daily cap key must NOT be written
+        final today = DateTime.now().toIso8601String().substring(0, 10);
+        expect(prefs.getBool('notif_sent_srs_$today'), isNull);
       });
 
       test('does nothing when dueCount is negative', () async {
@@ -178,9 +185,12 @@ void main() {
           prefs: prefs,
           tracker: tracker,
           permissions: permissions,
+          plugin: fakePlugin,
         );
         await repo.scheduleSrsReminder(-5);
-        expect(true, isTrue);
+        expect(fakePlugin.scheduledIds, isEmpty);
+        final today = DateTime.now().toIso8601String().substring(0, 10);
+        expect(prefs.getBool('notif_sent_srs_$today'), isNull);
       });
 
       test('does nothing when permission is denied', () async {
@@ -189,23 +199,35 @@ void main() {
           prefs: prefs,
           tracker: tracker,
           permissions: permissions,
+          plugin: fakePlugin,
         );
         await repo.scheduleSrsReminder(5);
-        expect(true, isTrue);
+        expect(fakePlugin.scheduledIds, isEmpty);
+        final today = DateTime.now().toIso8601String().substring(0, 10);
+        expect(prefs.getBool('notif_sent_srs_$today'), isNull);
       });
     });
 
     // -- scheduleStreakReminder guard clauses --------------------------------
 
     group('scheduleStreakReminder() guard clauses', () {
+      late FakeFlutterLocalNotificationsPlugin fakePlugin;
+
+      setUp(() {
+        fakePlugin = FakeFlutterLocalNotificationsPlugin();
+      });
+
       test('does nothing when streakDays is 0', () async {
         final repo = _buildRepo(
           prefs: prefs,
           tracker: tracker,
           permissions: permissions,
+          plugin: fakePlugin,
         );
         await repo.scheduleStreakReminder(0);
-        expect(true, isTrue);
+        expect(fakePlugin.scheduledIds, isEmpty);
+        final today = DateTime.now().toIso8601String().substring(0, 10);
+        expect(prefs.getBool('notif_sent_streak_$today'), isNull);
       });
 
       test('does nothing when streakDays is 1', () async {
@@ -213,9 +235,12 @@ void main() {
           prefs: prefs,
           tracker: tracker,
           permissions: permissions,
+          plugin: fakePlugin,
         );
         await repo.scheduleStreakReminder(1);
-        expect(true, isTrue);
+        expect(fakePlugin.scheduledIds, isEmpty);
+        final today = DateTime.now().toIso8601String().substring(0, 10);
+        expect(prefs.getBool('notif_sent_streak_$today'), isNull);
       });
 
       test('does nothing when permission is permanentlyDenied', () async {
@@ -224,9 +249,12 @@ void main() {
           prefs: prefs,
           tracker: tracker,
           permissions: permissions,
+          plugin: fakePlugin,
         );
         await repo.scheduleStreakReminder(5);
-        expect(true, isTrue);
+        expect(fakePlugin.scheduledIds, isEmpty);
+        final today = DateTime.now().toIso8601String().substring(0, 10);
+        expect(prefs.getBool('notif_sent_streak_$today'), isNull);
       });
     });
 
@@ -249,7 +277,7 @@ void main() {
         // Should return early — cap key is set
         await repo.scheduleSrsReminder(5);
         // Verify cap key still set (no duplicate)
-        expect(await prefs.getBool(capKey), isTrue);
+        expect(prefs.getBool(capKey), isTrue);
       });
 
       test('streak cap key blocks second schedule same day', () async {
@@ -265,7 +293,7 @@ void main() {
         );
 
         await repo.scheduleStreakReminder(3);
-        expect(await prefs.getBool(capKey), isTrue);
+        expect(prefs.getBool(capKey), isTrue);
       });
 
       test('SRS and streak caps are independent', () async {
@@ -275,13 +303,13 @@ void main() {
         await prefs.setBool('notif_sent_srs_$today', true);
 
         // Streak cap should NOT be set
-        expect(await prefs.getBool('notif_sent_streak_$today'), isNull);
+        expect(prefs.getBool('notif_sent_streak_$today'), isNull);
       });
 
       test('no cap key means scheduling is allowed', () async {
         final today = DateTime.now().toIso8601String().substring(0, 10);
-        expect(await prefs.getBool('notif_sent_srs_$today'), isNull);
-        expect(await prefs.getBool('notif_sent_streak_$today'), isNull);
+        expect(prefs.getBool('notif_sent_srs_$today'), isNull);
+        expect(prefs.getBool('notif_sent_streak_$today'), isNull);
       });
     });
 

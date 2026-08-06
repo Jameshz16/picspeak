@@ -7,7 +7,6 @@ import 'package:timezone/data/latest_all.dart' as tz;
 
 import '../../app_settings/domain/app_settings.dart';
 import '../../flashcard_review/domain/flashcard_repository.dart';
-import '../../stats/data/stats_repository.dart';
 import '../domain/notification_repository.dart';
 import 'notification_permissions.dart';
 import 'usage_time_tracker.dart';
@@ -18,7 +17,6 @@ class NotificationRepositoryImpl implements NotificationRepository {
   final UsageTimeTracker _usageTimeTracker;
   final NotificationPermissions _permissions;
   final FlashcardRepository _flashcardRepository;
-  final StatsRepository _statsRepository;
 
   static const _androidChannelId = 'pic_speak_reminders';
   static const _androidChannelName = 'PicSpeak Reminders';
@@ -32,13 +30,11 @@ class NotificationRepositoryImpl implements NotificationRepository {
     required UsageTimeTracker usageTimeTracker,
     required NotificationPermissions permissions,
     required FlashcardRepository flashcardRepository,
-    required StatsRepository statsRepository,
   })  : _notificationsPlugin = notificationsPlugin,
         _prefs = prefs,
         _usageTimeTracker = usageTimeTracker,
         _permissions = permissions,
-        _flashcardRepository = flashcardRepository,
-        _statsRepository = statsRepository;
+        _flashcardRepository = flashcardRepository;
 
   /// Initializes time zones and sets the local timezone from the device.
   /// Must be called once at app startup. Safe to call multiple times.

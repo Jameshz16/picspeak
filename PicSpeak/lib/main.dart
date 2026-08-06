@@ -21,7 +21,6 @@ import 'features/notifications/data/notification_repository_impl.dart';
 import 'features/notifications/data/usage_time_tracker.dart';
 import 'features/onboarding/data/onboarding_repository_impl.dart';
 import 'features/onboarding/data/onboarding_providers.dart';
-import 'features/stats/data/stats_repository.dart';
 import 'features/word_history/data/history_providers.dart';
 import 'features/word_history/data/history_repository_impl.dart';
 
@@ -38,7 +37,6 @@ void main() async {
   final settingsRepo = SettingsRepositoryImpl(prefs);
   final flashcardRepo = FlashcardRepositoryImpl(prefs);
   final historyRepo = HistoryRepositoryImpl(prefs);
-  final statsRepo = StatsRepository(prefs);
 
   // Notification infrastructure (non-fatal on failure)
   bool launchedFromNotification = false;
@@ -52,7 +50,6 @@ void main() async {
     usageTimeTracker: usageTimeTracker,
     permissions: permissions,
     flashcardRepository: flashcardRepo,
-    statsRepository: statsRepo,
   );
 
   // Record app open for smart scheduling (independent of notification state).

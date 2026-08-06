@@ -24,7 +24,7 @@ class UsageTimeTracker {
   }
 
   /// Computes the optimal schedule time based on usage patterns.
-  /// Returns the modal hour minus 30 minutes, or falls back to 16:00 (4 PM)
+  /// Returns the modal hour minus 1 hour, or falls back to 16:00 (4 PM)
   /// if there are fewer than 5 data points.
   Future<TimeOfDay> getScheduleTime() async {
     final timestamps = _getTimestamps();
@@ -60,7 +60,7 @@ class UsageTimeTracker {
       }
     }
 
-    // Subtract 30 minutes
+    // Subtract 1 hour (schedule an hour before the user's typical open time)
     int scheduleHour = modalHour - 1;
     if (scheduleHour < 0) {
       scheduleHour = 23;

@@ -37,7 +37,7 @@ void main() {
         expect(result, equals(const TimeOfDay(hour: 16, minute: 0)));
       });
 
-      test('5+ timestamps → modal hour minus 30min', () async {
+      test('5+ timestamps → modal hour minus 1 hour', () async {
         // All opens at hour 14 → modal = 14, schedule = 13
         final timestamps = List.generate(
           5,
