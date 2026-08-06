@@ -10,10 +10,12 @@ abstract class NotificationRepository {
   Future<bool> getPermissionStatus();
 
   /// Schedule an SRS review reminder with the given due card count.
-  Future<void> scheduleSrsReminder(int dueCount);
+  /// When [settings] is provided, uses quietHoursEnabled and customScheduleTime.
+  Future<void> scheduleSrsReminder(int dueCount, {AppSettings? settings});
 
   /// Schedule a streak reminder with the given streak day count.
-  Future<void> scheduleStreakReminder(int streakDays);
+  /// When [settings] is provided, uses quietHoursEnabled and customScheduleTime.
+  Future<void> scheduleStreakReminder(int streakDays, {AppSettings? settings});
 
   /// Cancel all scheduled notifications.
   Future<void> cancelAll();

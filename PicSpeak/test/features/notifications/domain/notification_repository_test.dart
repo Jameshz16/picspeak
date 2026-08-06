@@ -24,12 +24,12 @@ class MockNotificationRepository implements NotificationRepository {
   }
 
   @override
-  Future<void> scheduleSrsReminder(int dueCount) async {
+  Future<void> scheduleSrsReminder(int dueCount, {AppSettings? settings}) async {
     lastSrsDueCount = dueCount;
   }
 
   @override
-  Future<void> scheduleStreakReminder(int streakDays) async {
+  Future<void> scheduleStreakReminder(int streakDays, {AppSettings? settings}) async {
     lastStreakDays = streakDays;
   }
 
