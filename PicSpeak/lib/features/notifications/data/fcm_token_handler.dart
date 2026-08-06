@@ -28,14 +28,19 @@ class FcmTokenHandler {
       await _saveToken(token);
     }
 
-    // Listen for token refreshes (guard against async handler errors)
+    // Listen for token refreshes.
+    // Note: stream `onError` only captures errors emitted BY the stream, not
+    // exceptions thrown by the data handler, so wrap the handler body itself.
     _tokenSubscription = _messaging.onTokenRefresh.listen(
       (token) {
-        _saveToken(token);
+        _saveToken(token).catchError((e) {
+          // ignore: avoid_print
+          print('[FcmTokenHandler] token refresh save error: $e');
+        });
       },
-      onError: (e) {
+      onError: (Object e) {
         // ignore: avoid_print
-        print('[FcmTokenHandler] onTokenRefresh error: $e');
+        print('[FcmTokenHandler] onTokenRefresh stream error: $e');
       },
     );
   }

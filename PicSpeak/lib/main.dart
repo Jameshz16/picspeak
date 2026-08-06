@@ -55,8 +55,13 @@ void main() async {
     statsRepository: statsRepo,
   );
 
-  // Record app open for smart scheduling (independent of notification state)
-  await usageTimeTracker.recordOpen();
+  // Record app open for smart scheduling (independent of notification state).
+  // Guarded separately so a prefs failure never becomes an unhandled async error.
+  try {
+    await usageTimeTracker.recordOpen();
+  } catch (e) {
+    debugPrint('Usage time tracker recordOpen failed: $e');
+  }
 
   // Notification infrastructure init (non-fatal on failure)
   try {
