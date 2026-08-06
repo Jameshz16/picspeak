@@ -142,8 +142,9 @@ void main() {
       expect(SrsEngine.isDue(future), isFalse);
     });
 
-    test('now → is due', () {
-      expect(SrsEngine.isDue(DateTime.now()), isTrue);
+    test('now → not yet due (isAfter is strict)', () {
+      // isDue uses isAfter (strict), so exactly "now" has not passed yet.
+      expect(SrsEngine.isDue(DateTime.now()), isFalse);
     });
   });
 
@@ -162,8 +163,10 @@ void main() {
       expect(SrsEngine.nextReviewLabel(future), equals('in 30m'));
     });
 
-    test('3 hours → "in 3h"', () {
-      final future = DateTime.now().add(const Duration(hours: 3));
+    test('3+ hours → "in 3h"', () {
+      // Use 3h30m so inHours truncation doesn't produce 'in 2h'
+      // when a few nanoseconds elapse between DateTime.now() calls.
+      final future = DateTime.now().add(const Duration(hours: 3, minutes: 30));
       expect(SrsEngine.nextReviewLabel(future), equals('in 3h'));
     });
 
@@ -173,7 +176,9 @@ void main() {
     });
 
     test('5 days → "in 5 days"', () {
-      final future = DateTime.now().add(const Duration(days: 5));
+      // Add a few minutes cushion so inDays truncation doesn't produce 'in 4
+      // days' when nanoseconds elapse between the two DateTime.now() calls.
+      final future = DateTime.now().add(const Duration(days: 5, minutes: 30));
       expect(SrsEngine.nextReviewLabel(future), equals('in 5 days'));
     });
 

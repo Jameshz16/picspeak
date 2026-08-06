@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:picspeak/core/data/label_map_repository.dart';
+import 'package:picspeak/core/data/word_category.dart';
 
 class _TestLabelMapRepository implements LabelMapRepository {
   final Map<String, String> _map;
@@ -8,6 +9,18 @@ class _TestLabelMapRepository implements LabelMapRepository {
 
   @override
   String? translate(String enLabel) => _map[enLabel];
+
+  @override
+  List<WordCategory> getCategories() => [];
+
+  @override
+  List<MapEntry<String, String>> getWordsInCategory(String categoryId) => [];
+
+  @override
+  String getCategoryForWord(String enLabel) => 'other';
+
+  @override
+  int get wordCount => _map.length;
 
   @override
   Future<void> loadMap() async {}
