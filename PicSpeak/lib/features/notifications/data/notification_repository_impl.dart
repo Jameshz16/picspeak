@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tz;
@@ -23,6 +24,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
   static const _androidChannelName = 'PicSpeak Reminders';
   static const _srsNotificationId = 0;
   static const _streakNotificationId = 1;
+  static bool _timezoneInitialized = false;
 
   NotificationRepositoryImpl({
     required FlutterLocalNotificationsPlugin notificationsPlugin,
@@ -38,9 +40,20 @@ class NotificationRepositoryImpl implements NotificationRepository {
         _flashcardRepository = flashcardRepository,
         _statsRepository = statsRepository;
 
-  /// Initializes time zones. Must be called once at app startup.
-  static void initialize() {
-    tz.initializeTimeZones();
+  /// Initializes time zones and sets the local timezone from the device.
+  /// Must be called once at app startup. Safe to call multiple times.
+  static Future<void> initialize() async {
+    if (_timezoneInitialized) return;
+    try {
+      tz.initializeTimeZones();
+      final timeZoneName = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(timeZoneName));
+      _timezoneInitialized = true;
+    } catch (e) {
+      // If timezone initialization fails, continue with UTC (default).
+      // Notifications will still work but may fire at wrong wall‑clock time.
+      debugPrint('NotificationRepositoryImpl: timezone init failed: $e');
+    }
   }
 
   /// Initializes the notification plugin with platform-specific settings.

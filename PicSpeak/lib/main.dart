@@ -40,9 +40,8 @@ void main() async {
   final historyRepo = HistoryRepositoryImpl(prefs);
   final statsRepo = StatsRepository(prefs);
 
-  // Notification infrastructure
-  NotificationRepositoryImpl.initialize();
-
+  // Notification infrastructure (non-fatal on failure)
+  bool launchedFromNotification = false;
   final notificationPlugin = FlutterLocalNotificationsPlugin();
   final usageTimeTracker = UsageTimeTracker(prefs);
   final permissions = NotificationPermissions();
@@ -55,24 +54,36 @@ void main() async {
     flashcardRepository: flashcardRepo,
     statsRepository: statsRepo,
   );
-  await notificationRepo.init();
 
-  // Check if app was launched from a notification tap
-  final launchDetails =
-      await notificationPlugin.getNotificationAppLaunchDetails();
-  final launchedFromNotification =
-      launchDetails?.didNotificationLaunchApp ?? false;
+  try {
+    await NotificationRepositoryImpl.initialize();
+    await notificationRepo.init();
 
-  // Record app open for smart scheduling
-  await usageTimeTracker.recordOpen();
+    // Check if app was launched from a notification tap
+    final launchDetails =
+        await notificationPlugin.getNotificationAppLaunchDetails();
+    launchedFromNotification =
+        launchDetails?.didNotificationLaunchApp ?? false;
+
+    // Record app open for smart scheduling
+    await usageTimeTracker.recordOpen();
+  } catch (e) {
+    // If notification init fails, continue without notifications.
+    debugPrint('Notification init failed: $e');
+  }
+
 
   // Initialize FCM token handler (silent if no user logged in)
-  final fcmHandler = FcmTokenHandler(
-    messaging: FirebaseMessaging.instance,
-    auth: FirebaseAuth.instance,
-    firestore: FirebaseFirestore.instance,
-  );
-  fcmHandler.init(); // unawaited — fire and forget
+  try {
+    final fcmHandler = FcmTokenHandler(
+      messaging: FirebaseMessaging.instance,
+      auth: FirebaseAuth.instance,
+      firestore: FirebaseFirestore.instance,
+    );
+    fcmHandler.init(); // unawaited — fire and forget
+  } catch (e) {
+    debugPrint('FCM token handler init failed: $e');
+  }
 
   runApp(
     ProviderScope(
