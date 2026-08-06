@@ -1,10 +1,6 @@
 import 'package:permission_handler/permission_handler.dart';
 
-enum NotificationPermissionStatus {
-  granted,
-  denied,
-  permanentlyDenied,
-}
+import '../domain/notification_permission_status.dart';
 
 class NotificationPermissions {
   /// Requests notification permission from the OS.

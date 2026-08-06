@@ -1,9 +1,14 @@
+import 'notification_permission_status.dart';
 import '../../app_settings/domain/app_settings.dart';
 
 abstract class NotificationRepository {
   /// Request notification permission from the OS.
   /// Returns true if permission was granted.
   Future<bool> requestPermission();
+
+  /// Request notification permission from the OS with detailed status.
+  /// Use this when you need to distinguish denied vs permanently denied.
+  Future<NotificationPermissionStatus> requestPermissionDetailed();
 
   /// Check current notification permission status.
   /// Returns true if permission is granted.

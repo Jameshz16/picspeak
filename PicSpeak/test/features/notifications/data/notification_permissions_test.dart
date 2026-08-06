@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:picspeak/features/notifications/domain/notification_permission_status.dart';
 import 'package:picspeak/features/notifications/data/notification_permissions.dart';
 
 void main() {

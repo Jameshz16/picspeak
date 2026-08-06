@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:picspeak/features/app_settings/domain/app_settings.dart';
+import 'package:picspeak/features/notifications/domain/notification_permission_status.dart';
 import 'package:picspeak/features/notifications/domain/notification_repository.dart';
 
 /// Simple mock implementation to verify the abstract interface contract.
@@ -16,6 +17,14 @@ class MockNotificationRepository implements NotificationRepository {
   @override
   Future<bool> requestPermission() async {
     return lastPermissionResult ?? false;
+  }
+
+  @override
+  Future<NotificationPermissionStatus> requestPermissionDetailed() async {
+    if (lastPermissionResult == true) {
+      return NotificationPermissionStatus.granted;
+    }
+    return NotificationPermissionStatus.denied;
   }
 
   @override

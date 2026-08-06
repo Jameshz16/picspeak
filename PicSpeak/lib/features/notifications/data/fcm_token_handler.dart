@@ -4,10 +4,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
+import '../../../core/utils/retry_with_backoff.dart';
+
 class FcmTokenHandler {
   final FirebaseMessaging _messaging;
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
+
+  static const _maxGetTokenAttempts = 3;
+  static const _maxSaveAttempts = 3;
 
   StreamSubscription<String>? _tokenSubscription;
 
@@ -22,8 +27,8 @@ class FcmTokenHandler {
   /// Initializes the FCM token handler.
   /// Gets the current token and listens for refreshes.
   Future<void> init() async {
-    // Get current token
-    final token = await _messaging.getToken();
+    // Get current token with bounded retry
+    final token = await _getTokenWithRetry();
     if (token != null) {
       await _saveToken(token);
     }
@@ -45,6 +50,20 @@ class FcmTokenHandler {
     );
   }
 
+  /// Gets the FCM token with bounded retry and exponential backoff.
+  Future<String?> _getTokenWithRetry() async {
+    try {
+      return await retryWithBackoff<String?>(
+        () => _messaging.getToken(),
+        maxAttempts: _maxGetTokenAttempts,
+      );
+    } catch (e) {
+      // ignore: avoid_print
+      print('[FcmTokenHandler] Failed to get FCM token after $_maxGetTokenAttempts attempts: $e');
+      return null;
+    }
+  }
+
   /// Saves the FCM token to Firestore under users/{uid}/fcmToken.
   /// Silent failure if no user is logged in.
   Future<void> _saveToken(String token) async {
@@ -55,14 +74,17 @@ class FcmTokenHandler {
     }
 
     try {
-      await _firestore.collection('users').doc(user.uid).set(
-        {'fcmToken': token},
-        SetOptions(merge: true),
+      await retryWithBackoff<void>(
+        () => _firestore.collection('users').doc(user.uid).set(
+          {'fcmToken': token},
+          SetOptions(merge: true),
+        ),
+        maxAttempts: _maxSaveAttempts,
       );
     } catch (e) {
       // Silent failure - log warning but don't crash
       // ignore: avoid_print
-      print('[FcmTokenHandler] Failed to save FCM token: $e');
+      print('[FcmTokenHandler] Failed to save FCM token after $_maxSaveAttempts attempts: $e');
     }
   }
 

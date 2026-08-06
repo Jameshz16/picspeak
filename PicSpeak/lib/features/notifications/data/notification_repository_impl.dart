@@ -8,6 +8,7 @@ import 'package:timezone/data/latest_all.dart' as tz;
 import '../../app_settings/domain/app_settings.dart';
 import '../../flashcard_review/domain/flashcard_repository.dart';
 import '../domain/notification_repository.dart';
+import '../domain/notification_permission_status.dart';
 import 'notification_permissions.dart';
 import 'usage_time_tracker.dart';
 
@@ -89,6 +90,11 @@ class NotificationRepositoryImpl implements NotificationRepository {
   Future<bool> requestPermission() async {
     final status = await _permissions.requestPermission();
     return status == NotificationPermissionStatus.granted;
+  }
+
+  @override
+  Future<NotificationPermissionStatus> requestPermissionDetailed() async {
+    return _permissions.requestPermission();
   }
 
   @override
@@ -204,6 +210,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
     }
   }
 
+  @override
   /// Reschedules all notifications based on current settings and data.
   ///
   /// Cancellation contract:
