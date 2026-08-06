@@ -53,6 +53,20 @@ class _MockFlashcardRepository implements FlashcardRepository {
       _cards.add(word);
     }
   }
+
+  @override
+  Future<List<RecognizedWord>> getDueCards() async => _cards;
+
+  @override
+  Future<void> updateSrs({
+    required String enLabel,
+    required int interval,
+    required double easeFactor,
+    required DateTime nextReview,
+  }) async {}
+
+  @override
+  Future<int> getDueCount() async => _cards.length;
 }
 
 class _MockHistoryRepository implements HistoryRepository {

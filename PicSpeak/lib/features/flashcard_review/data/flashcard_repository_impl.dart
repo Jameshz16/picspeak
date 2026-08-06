@@ -44,6 +44,45 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
     await _persist(cards);
   }
 
+  @override
+  Future<List<RecognizedWord>> getDueCards() async {
+    final cards = await loadAll();
+    final now = DateTime.now();
+    return cards.where((card) {
+      // New cards (no nextReview) are always due
+      if (card.nextReview == null) return true;
+      // Due if nextReview is in the past
+      return card.nextReview!.isBefore(now);
+    }).toList();
+  }
+
+  @override
+  Future<void> updateSrs({
+    required String enLabel,
+    required int interval,
+    required double easeFactor,
+    required DateTime nextReview,
+  }) async {
+    final cards = await loadAll();
+    final index = cards.indexWhere((c) => c.enLabel == enLabel);
+    if (index == -1) return;
+
+    final card = cards[index];
+    cards[index] = card.copyWith(
+      interval: interval,
+      easeFactor: easeFactor,
+      nextReview: nextReview,
+      reviewCount: card.reviewCount + 1,
+    );
+    await _persist(cards);
+  }
+
+  @override
+  Future<int> getDueCount() async {
+    final due = await getDueCards();
+    return due.length;
+  }
+
   Future<void> _persist(List<RecognizedWord> cards) async {
     final jsonString = jsonEncode(cards.map((w) => w.toJson()).toList());
     await _prefs.setString(_key, jsonString);
