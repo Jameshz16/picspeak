@@ -28,10 +28,16 @@ class FcmTokenHandler {
       await _saveToken(token);
     }
 
-    // Listen for token refreshes
-    _tokenSubscription = _messaging.onTokenRefresh.listen((token) {
-      _saveToken(token);
-    });
+    // Listen for token refreshes (guard against async handler errors)
+    _tokenSubscription = _messaging.onTokenRefresh.listen(
+      (token) {
+        _saveToken(token);
+      },
+      onError: (e) {
+        // ignore: avoid_print
+        print('[FcmTokenHandler] onTokenRefresh error: $e');
+      },
+    );
   }
 
   /// Saves the FCM token to Firestore under users/{uid}/fcmToken.

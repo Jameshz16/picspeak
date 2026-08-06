@@ -55,6 +55,10 @@ void main() async {
     statsRepository: statsRepo,
   );
 
+  // Record app open for smart scheduling (independent of notification state)
+  await usageTimeTracker.recordOpen();
+
+  // Notification infrastructure init (non-fatal on failure)
   try {
     await NotificationRepositoryImpl.initialize();
     await notificationRepo.init();
@@ -64,26 +68,22 @@ void main() async {
         await notificationPlugin.getNotificationAppLaunchDetails();
     launchedFromNotification =
         launchDetails?.didNotificationLaunchApp ?? false;
-
-    // Record app open for smart scheduling
-    await usageTimeTracker.recordOpen();
   } catch (e) {
     // If notification init fails, continue without notifications.
     debugPrint('Notification init failed: $e');
   }
 
-
-  // Initialize FCM token handler (silent if no user logged in)
-  try {
-    final fcmHandler = FcmTokenHandler(
-      messaging: FirebaseMessaging.instance,
-      auth: FirebaseAuth.instance,
-      firestore: FirebaseFirestore.instance,
-    );
-    fcmHandler.init(); // unawaited — fire and forget
-  } catch (e) {
-    debugPrint('FCM token handler init failed: $e');
-  }
+  // Initialize FCM token handler (silent if no user logged in).
+  // Attach catchError so async errors from getToken() never escape as
+  // unhandled Futures — making the "non-fatal FCM init" guarantee true.
+  final fcmHandler = FcmTokenHandler(
+    messaging: FirebaseMessaging.instance,
+    auth: FirebaseAuth.instance,
+    firestore: FirebaseFirestore.instance,
+  );
+  fcmHandler.init().catchError((e) {
+    debugPrint('FCM token handler async error: $e');
+  });
 
   runApp(
     ProviderScope(
