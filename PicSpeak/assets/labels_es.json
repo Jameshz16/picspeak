@@ -4,37 +4,37 @@
       "nameEs": "Animales",
       "nameEn": "Animals",
       "icon": "pets",
-      "count": 70
+      "count": 71
     },
     "food": {
       "nameEs": "Comida",
       "nameEn": "Food",
       "icon": "restaurant",
-      "count": 63
+      "count": 64
     },
     "clothing": {
       "nameEs": "Ropa",
       "nameEn": "Clothing",
       "icon": "checkroom",
-      "count": 21
+      "count": 22
     },
     "home": {
       "nameEs": "Hogar",
       "nameEn": "Home",
       "icon": "home",
-      "count": 28
+      "count": 31
     },
     "vehicles": {
       "nameEs": "Vehículos",
       "nameEn": "Vehicles",
       "icon": "directions_car",
-      "count": 22
+      "count": 23
     },
     "nature": {
       "nameEs": "Naturaleza",
       "nameEn": "Nature",
       "icon": "nature",
-      "count": 25
+      "count": 26
     },
     "technology": {
       "nameEs": "Tecnología",
@@ -64,13 +64,13 @@
       "nameEs": "Edificios",
       "nameEn": "Buildings",
       "icon": "location_city",
-      "count": 14
+      "count": 16
     },
     "tools": {
       "nameEs": "Herramientas",
       "nameEn": "Tools",
       "icon": "build",
-      "count": 19
+      "count": 22
     },
     "toys_kids": {
       "nameEs": "Juguetes",
@@ -88,7 +88,7 @@
       "nameEs": "Otros",
       "nameEn": "Other",
       "icon": "more_horiz",
-      "count": 15
+      "count": 17
     }
   },
   "words": {
@@ -153,6 +153,7 @@
     "Hummingbird": "Colibrí",
     "Lizard": "Lagarto",
     "Sparrow": "Gorrión",
+    "Spider": "Araña",
     "Swan": "Cisne",
     "Worm": "Gusano",
     "Cricket": "Grillo",
@@ -216,6 +217,7 @@
     "Wine": "Vino",
     "Beer": "Cerveza",
     "Butter": "Manteca",
+    "Can": "Lata",
     "Steak": "Bistec",
     "Taco": "Taco",
     "Pumpkin": "Calabaza",
@@ -230,6 +232,7 @@
     "Cap": "Gorra",
     "Coat": "Abrigo",
     "Dress": "Vestido",
+    "Glasses": "Anteojos",
     "Glove": "Guante",
     "Hat": "Sombrero",
     "Jacket": "Chaqueta",
@@ -249,6 +252,7 @@
     "Bed": "Cama",
     "Blanket": "Manta",
     "Bookshelf": "Librero",
+    "Bottle": "Botella",
     "Chair": "Silla",
     "Clock": "Reloj de pared",
     "Closet": "Armario",
@@ -257,10 +261,12 @@
     "Desk": "Escritorio",
     "Door": "Puerta",
     "Drawer": "Cajón",
+    "Kettle": "Hervidor",
     "Lamp": "Lámpara",
     "Mirror": "Espejo",
     "Oven": "Horno",
     "Pillow": "Almohada",
+    "Plate": "Plato",
     "Refrigerator": "Heladera",
     "Rug": "Alfombra",
     "Sink": "Pileta",
@@ -282,6 +288,7 @@
     "Car": "Auto",
     "Fire truck": "Camión de bomberos",
     "Helicopter": "Helicóptero",
+    "Jet ski": "Moto acuática",
     "Motorcycle": "Motocicleta",
     "Scooter": "Scooter",
     "Skateboard": "Patineta",
@@ -321,6 +328,7 @@
     "Valley": "Valle",
     "Rainbow": "Arcoíris",
     "Cactus": "Cactus",
+    "Water": "Agua",
     "Battery": "Batería",
     "Calculator": "Calculadora",
     "Camera": "Cámara",
@@ -391,6 +399,7 @@
     "Hospital": "Hospital",
     "Hotel": "Hotel",
     "House": "Casa",
+    "Igloo": "Iglú",
     "Lighthouse": "Faro",
     "Restaurant": "Restaurante",
     "School": "Escuela",
@@ -398,7 +407,9 @@
     "Stadium": "Estadio",
     "Tower": "Torre",
     "Barn": "Granero",
+    "Bridge": "Puente",
     "Axe": "Hacha",
+    "Brush": "Cepillo",
     "Drill": "Taladro",
     "Hammer": "Martillo",
     "Knife": "Cuchillo",
@@ -414,8 +425,10 @@
     "Pencil": "Lápiz",
     "Cutting board": "Tabla de cortar",
     "Fork": "Tenedor",
+    "Glue": "Pegamento",
     "Spoon": "Cuchara",
     "Pan": "Sartén",
+    "Pen": "Lapicera",
     "Pot": "Olla",
     "Balloon": "Globo",
     "Doll": "Muñeca",
@@ -439,6 +452,7 @@
     "Farm": "Granja",
     "Backpack": "Mochila",
     "Bag": "Bolsa",
+    "Book": "Libro",
     "Box": "Caja",
     "Calendar": "Calendario",
     "Crown": "Corona",
@@ -448,6 +462,7 @@
     "Key": "Llave",
     "Mask": "Máscara",
     "Necklace": "Collar",
+    "Tent": "Carpa",
     "Umbrella": "Paraguas",
     "Wallet": "Billetera",
     "Envelope": "Sobre",
