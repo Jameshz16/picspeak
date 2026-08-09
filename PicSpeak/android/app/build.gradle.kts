@@ -1,11 +1,17 @@
 plugins {
     id("com.android.application")
-    // START: FlutterFire Configuration
-    id("com.google.gms.google-services")
-    // END: FlutterFire Configuration
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+// Apply the Google Services plugin only when the Firebase config file exists.
+// google-services.json is gitignored (it contains API keys), so a fresh clone
+// or a desktop-only developer must still be able to build without it. After
+// running `flutterfire configure`, the file appears and Firebase is enabled.
+val googleServicesFile = file("google-services.json")
+if (googleServicesFile.exists()) {
+    apply(plugin = "com.google.gms.google-services")
 }
 
 android {
@@ -45,6 +51,13 @@ android {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+}
+
+// Exclude legacy firebase-iid, which ML Kit's linkfirebase pulls transitively and
+// collides with firebase-messaging 24.x (both ship FirebaseInstanceIdReceiver).
+// firebase-messaging 24.x already provides those legacy classes itself.
+configurations.all {
+    exclude(group = "com.google.firebase", module = "firebase-iid")
 }
 
 flutter {
