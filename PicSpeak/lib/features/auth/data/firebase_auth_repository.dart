@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../domain/auth_repository.dart';
 import '../domain/user_profile.dart';
@@ -73,6 +74,7 @@ class FirebaseAuthRepository implements AuthRepository {
 
   @override
   Future<void> signOut() async {
+    await clearLocalData();
     await Future.wait([
       _auth.signOut(),
       _googleSignIn.signOut(),
@@ -84,6 +86,25 @@ class FirebaseAuthRepository implements AuthRepository {
     final user = _auth.currentUser;
     if (user == null) throw Exception('No user signed in');
     await user.delete();
+  }
+
+  @override
+  Future<void> clearLocalData() async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return;
+    final prefs = await SharedPreferences.getInstance();
+    final keys = prefs.getKeys();
+    for (final key in keys) {
+      if (key.contains(uid)) {
+        await prefs.remove(key);
+      }
+    }
+  }
+
+  @override
+  Future<void> deleteAccountAndClearData() async {
+    await clearLocalData();
+    await deleteAccount();
   }
 
   @override

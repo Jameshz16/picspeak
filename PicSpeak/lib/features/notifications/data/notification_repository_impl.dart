@@ -7,6 +7,7 @@ import 'package:timezone/data/latest_all.dart' as tz;
 
 import '../../app_settings/domain/app_settings.dart';
 import '../../flashcard_review/domain/flashcard_repository.dart';
+import '../../../core/utils/current_user.dart';
 import '../domain/notification_repository.dart';
 import '../domain/notification_permission_status.dart';
 import 'notification_permissions.dart';
@@ -24,6 +25,9 @@ class NotificationRepositoryImpl implements NotificationRepository {
   static const _srsNotificationId = 0;
   static const _streakNotificationId = 1;
   static bool _timezoneInitialized = false;
+
+  String _key(String base) =>
+      currentUserId.isEmpty ? base : '${currentUserId}_$base';
 
   NotificationRepositoryImpl({
     required FlutterLocalNotificationsPlugin notificationsPlugin,
@@ -111,7 +115,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
 
     // Check daily cap
     final today = DateTime.now().toIso8601String().substring(0, 10);
-    final capKey = 'notif_sent_srs_$today';
+    final capKey = _key('notif_sent_srs_$today');
     if (_prefs.getBool(capKey) == true) return;
 
     // Get schedule time (customScheduleTime overrides learned time)
@@ -158,7 +162,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
 
     // Check daily cap
     final today = DateTime.now().toIso8601String().substring(0, 10);
-    final capKey = 'notif_sent_streak_$today';
+    final capKey = _key('notif_sent_streak_$today');
     if (_prefs.getBool(capKey) == true) return;
 
     // Get schedule time (customScheduleTime overrides learned time)
@@ -241,7 +245,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
     if (settings.streakRemindersEnabled) {
       // Cancel any existing streak alarm before scheduling a fresh one
       await cancelByType('streak');
-      final streak = _prefs.getInt('study_streak') ?? 0;
+      final streak = _prefs.getInt(_key('study_streak')) ?? 0;
       await scheduleStreakReminder(streak, settings: settings);
     } else {
       // Sub-feature explicitly disabled → ensure the recurring alarm is dead

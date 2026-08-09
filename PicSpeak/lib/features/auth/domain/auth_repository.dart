@@ -1,5 +1,12 @@
 import 'user_profile.dart';
 
+/// Auth repository contract.
+///
+/// [clearLocalData] removes all uid-scoped SharedPreferences keys for the
+/// current user. Call this on sign-out to ensure the next user does not see
+/// the previous user's locally persisted data.
+///
+/// [deleteAccountAndClearData] does the same plus deletes the Firebase account.
 abstract class AuthRepository {
   /// Current user (null if not logged in).
   UserProfile? get currentUser;
@@ -24,4 +31,10 @@ abstract class AuthRepository {
 
   /// Send password reset email.
   Future<void> sendPasswordReset(String email);
+
+  /// Clear all locally persisted data for the current user.
+  Future<void> clearLocalData();
+
+  /// Delete the Firebase account AND clear all local data.
+  Future<void> deleteAccountAndClearData();
 }

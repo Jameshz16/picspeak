@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/utils/current_user.dart';
 import '../../flashcard_review/data/flashcard_providers.dart';
 import '../../flashcard_review/domain/flashcard_repository.dart';
 import '../../word_history/data/history_providers.dart';
@@ -9,12 +10,11 @@ import '../domain/learning_stats.dart';
 
 class StatsRepository {
   final SharedPreferences _prefs;
-  static const _streakKey = 'study_streak';
-  static const _lastStudyKey = 'last_study_date';
-  static const _reviewedTodayKey = 'reviewed_today_count';
-  static const _reviewedTodayDateKey = 'reviewed_today_date';
 
   StatsRepository(this._prefs);
+
+  String _key(String base) =>
+      currentUserId.isEmpty ? base : '${currentUserId}_$base';
 
   /// Compute stats from flashcard + history data.
   Future<LearningStats> computeStats({
@@ -51,15 +51,15 @@ class StatsRepository {
     // Always accumulate reviewed count, even for same-day sessions
     _addReviewedToday(reviewedCount);
 
-    final lastStudy = _prefs.getString(_lastStudyKey);
-    if (lastStudy == today) return; // Only guard streak update
+    final lastStudy = _prefs.getString(_key('last_study_date'));
+    if (lastStudy == today) return;
 
     final yesterday = DateTime.now()
         .subtract(const Duration(days: 1))
         .toIso8601String()
         .substring(0, 10);
 
-    int streak = _prefs.getInt(_streakKey) ?? 0;
+    int streak = _prefs.getInt(_key('study_streak')) ?? 0;
 
     if (lastStudy == yesterday) {
       streak++;
@@ -67,16 +67,16 @@ class StatsRepository {
       streak = 1;
     }
 
-    _prefs.setInt(_streakKey, streak);
-    _prefs.setString(_lastStudyKey, today);
+    _prefs.setInt(_key('study_streak'), streak);
+    _prefs.setString(_key('last_study_date'), today);
   }
 
   int _updateStreak() {
     final today = DateTime.now().toIso8601String().substring(0, 10);
-    final lastStudy = _prefs.getString(_lastStudyKey);
+    final lastStudy = _prefs.getString(_key('last_study_date'));
 
     if (lastStudy == today) {
-      return _prefs.getInt(_streakKey) ?? 0;
+      return _prefs.getInt(_key('study_streak')) ?? 0;
     }
 
     final yesterday = DateTime.now()
@@ -85,7 +85,7 @@ class StatsRepository {
         .substring(0, 10);
 
     if (lastStudy == yesterday) {
-      return _prefs.getInt(_streakKey) ?? 0;
+      return _prefs.getInt(_key('study_streak')) ?? 0;
     }
 
     return 0;
@@ -93,20 +93,20 @@ class StatsRepository {
 
   int _getReviewedToday() {
     final today = DateTime.now().toIso8601String().substring(0, 10);
-    final savedDate = _prefs.getString(_reviewedTodayDateKey);
+    final savedDate = _prefs.getString(_key('reviewed_today_date'));
     if (savedDate != today) return 0;
-    return _prefs.getInt(_reviewedTodayKey) ?? 0;
+    return _prefs.getInt(_key('reviewed_today_count')) ?? 0;
   }
 
   void _addReviewedToday(int count) {
     final today = DateTime.now().toIso8601String().substring(0, 10);
-    final savedDate = _prefs.getString(_reviewedTodayDateKey);
+    final savedDate = _prefs.getString(_key('reviewed_today_date'));
     int current = 0;
     if (savedDate == today) {
-      current = _prefs.getInt(_reviewedTodayKey) ?? 0;
+      current = _prefs.getInt(_key('reviewed_today_count')) ?? 0;
     }
-    _prefs.setInt(_reviewedTodayKey, current + count);
-    _prefs.setString(_reviewedTodayDateKey, today);
+    _prefs.setInt(_key('reviewed_today_count'), current + count);
+    _prefs.setString(_key('reviewed_today_date'), today);
   }
 }
 

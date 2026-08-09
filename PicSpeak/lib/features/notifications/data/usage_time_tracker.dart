@@ -3,11 +3,15 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/utils/current_user.dart';
+
 class UsageTimeTracker {
-  static const _key = 'usage_timestamps';
   final SharedPreferences _prefs;
 
   UsageTimeTracker(this._prefs);
+
+  String _key(String base) =>
+      currentUserId.isEmpty ? base : '${currentUserId}_$base';
 
   /// Records the current app open timestamp.
   /// Keeps only the last 30 timestamps.
@@ -20,7 +24,7 @@ class UsageTimeTracker {
       timestamps.removeRange(0, timestamps.length - 30);
     }
 
-    await _prefs.setString(_key, jsonEncode(timestamps));
+    await _prefs.setString(_key('usage_timestamps'), jsonEncode(timestamps));
   }
 
   /// Computes the optimal schedule time based on usage patterns.
@@ -77,7 +81,7 @@ class UsageTimeTracker {
   }
 
   List<String> _getTimestamps() {
-    final jsonString = _prefs.getString(_key);
+    final jsonString = _prefs.getString(_key('usage_timestamps'));
     if (jsonString == null) return [];
     try {
       final list = jsonDecode(jsonString) as List<dynamic>;

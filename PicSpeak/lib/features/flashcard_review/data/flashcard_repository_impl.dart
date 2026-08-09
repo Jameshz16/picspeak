@@ -2,14 +2,17 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/utils/current_user.dart';
 import '../../object_recognition/domain/recognized_word.dart';
 import '../domain/flashcard_repository.dart';
 
 class FlashcardRepositoryImpl implements FlashcardRepository {
-  static const _key = 'flashcards';
   final SharedPreferences _prefs;
 
   FlashcardRepositoryImpl(this._prefs);
+
+  String _key(String base) =>
+      currentUserId.isEmpty ? base : '${currentUserId}_$base';
 
   @override
   Future<void> save(RecognizedWord word) async {
@@ -23,7 +26,8 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
 
   @override
   Future<List<RecognizedWord>> loadAll() async {
-    final jsonString = _prefs.getString(_key);
+    final key = _key('flashcards');
+    final jsonString = _prefs.getString(key);
     if (jsonString == null) return [];
     final list = jsonDecode(jsonString) as List<dynamic>;
     return list
@@ -49,9 +53,7 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
     final cards = await loadAll();
     final now = DateTime.now();
     return cards.where((card) {
-      // New cards (no nextReview) are always due
       if (card.nextReview == null) return true;
-      // Due if nextReview is in the past
       return card.nextReview!.isBefore(now);
     }).toList();
   }
@@ -85,6 +87,6 @@ class FlashcardRepositoryImpl implements FlashcardRepository {
 
   Future<void> _persist(List<RecognizedWord> cards) async {
     final jsonString = jsonEncode(cards.map((w) => w.toJson()).toList());
-    await _prefs.setString(_key, jsonString);
+    await _prefs.setString(_key('flashcards'), jsonString);
   }
 }

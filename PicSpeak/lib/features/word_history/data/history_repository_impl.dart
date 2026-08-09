@@ -2,13 +2,16 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/utils/current_user.dart';
 import '../../object_recognition/domain/recognized_word.dart';
 import '../domain/history_repository.dart';
 
 class HistoryRepositoryImpl implements HistoryRepository {
-  static const _key = 'word_history';
   static const _maxEntries = 200;
   final SharedPreferences _prefs;
+
+  String _key(String base) =>
+      currentUserId.isEmpty ? base : '${currentUserId}_$base';
 
   HistoryRepositoryImpl(this._prefs);
 
@@ -41,7 +44,8 @@ class HistoryRepositoryImpl implements HistoryRepository {
 
   @override
   Future<List<RecognizedWord>> loadAll() async {
-    final jsonString = _prefs.getString(_key);
+    final key = _key('word_history');
+    final jsonString = _prefs.getString(key);
     if (jsonString == null) return [];
     final list = jsonDecode(jsonString) as List<dynamic>;
     return list
@@ -61,6 +65,6 @@ class HistoryRepositoryImpl implements HistoryRepository {
 
   Future<void> _persist(List<RecognizedWord> entries) async {
     final jsonString = jsonEncode(entries.map((w) => w.toJson()).toList());
-    await _prefs.setString(_key, jsonString);
+    await _prefs.setString(_key('word_history'), jsonString);
   }
 }
