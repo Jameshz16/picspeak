@@ -33,10 +33,11 @@ Select your project and both platforms (Android + iOS).
 
 > **Important**: `google-services.json` and `GoogleService-Info.plist` are
 > gitignored (they contain API keys). `firebase_options.dart` IS tracked but
-> ships with placeholder values. After running `flutterfire configure`, do NOT
-> commit your real credentials — the file is in `.gitignore` for a reason…
-> wait, actually the stub *is* tracked intentionally. Just don't push your
-> real keys to a public repo if you regenerate it.
+> ships with placeholder values. The Android Gradle build applies the
+> google-services plugin **only when `android/app/google-services.json`
+> exists**, so a fresh clone builds fine without Firebase and Firebase gets
+> enabled automatically once you run `flutterfire configure`.
+> Just don't push your real keys to a public repo if you regenerate the file.
 
 ## Step 2: Install dependencies
 
