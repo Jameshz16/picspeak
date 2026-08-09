@@ -2,6 +2,9 @@ import 'dart:ui';
 import 'labeled_object.dart';
 
 class RecognizedWord {
+  /// Sentinel value used when no Spanish translation is available.
+  static const noTranslationSentinel = 'Sin traducción';
+
   final String enLabel;
   final String esLabel;
   final double confidence;
@@ -107,7 +110,7 @@ class RecognizedWord {
   ) {
     return RecognizedWord(
       enLabel: label.label,
-      esLabel: esTranslation ?? 'Sin traducción',
+      esLabel: esTranslation ?? noTranslationSentinel,
       confidence: label.confidence,
       photoPath: photoPath,
       timestamp: DateTime.now(),

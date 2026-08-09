@@ -340,8 +340,8 @@ class _ReviewTodayScreenState extends ConsumerState<ReviewTodayScreen>
     final labelText = isSpanishPrimary ? word.esLabel : word.enLabel;
     final ttsLocale = isSpanishPrimary ? 'es-ES' : 'en-US';
     final ttsLabel = isSpanishPrimary ? 'Escuchar en español' : 'Escuchar en inglés';
-    final hasTranslation = word.esLabel != 'Sin traducción' &&
-        word.esLabel != 'Traducción no disponible';
+    final hasTranslation =
+        word.esLabel != RecognizedWord.noTranslationSentinel;
     final ttsAvailable = isSpanishPrimary ? _esAvailable && hasTranslation : _enAvailable;
 
     return Card(
@@ -400,8 +400,8 @@ class _ReviewTodayScreenState extends ConsumerState<ReviewTodayScreen>
     final labelText = isSpanishPrimary ? word.enLabel : word.esLabel;
     final ttsLocale = isSpanishPrimary ? 'en-US' : 'es-ES';
     final ttsLabel = isSpanishPrimary ? 'Escuchar en inglés' : 'Escuchar en español';
-    final hasTranslation = word.esLabel != 'Sin traducción' &&
-        word.esLabel != 'Traducción no disponible';
+    final hasTranslation =
+        word.esLabel != RecognizedWord.noTranslationSentinel;
     final ttsAvailable = isSpanishPrimary ? _enAvailable : _esAvailable && hasTranslation;
 
     // Show SRS info on the back

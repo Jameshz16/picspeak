@@ -98,7 +98,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
     final esTranslation = labelMapRepo.translate(label.label);
     final newWord = RecognizedWord(
       enLabel: label.label,
-      esLabel: esTranslation ?? 'Sin traducción',
+      esLabel: esTranslation ?? RecognizedWord.noTranslationSentinel,
       confidence: label.confidence,
       photoPath: _currentWord.photoPath,
       timestamp: DateTime.now(),
@@ -116,8 +116,8 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final speakingLocale = ref.watch(ttsPlayNotifierProvider);
-    final hasTranslation = _currentWord.esLabel != 'Sin traducción' &&
-        _currentWord.esLabel != 'Traducción no disponible';
+    final hasTranslation =
+        _currentWord.esLabel != RecognizedWord.noTranslationSentinel;
 
     return Scaffold(
       appBar: AppBar(
@@ -169,7 +169,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                     if (!hasTranslation) ...[
                       const SizedBox(height: 8),
                       Chip(
-                        label: const Text('Sin traducción'),
+                        label: const Text(RecognizedWord.noTranslationSentinel),
                         backgroundColor: Colors.orange.shade100,
                       ),
                     ],
