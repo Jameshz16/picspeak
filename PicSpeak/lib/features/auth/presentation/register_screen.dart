@@ -62,6 +62,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (msg.contains('invalid-email')) return 'Invalid email address.';
     if (msg.contains('weak-password')) return 'Password is too weak.';
     if (msg.contains('network-request-failed')) return 'No internet connection.';
+    // Log unexpected errors to help debugging (user sees generic message).
+    debugPrint('Register error (unexpected): $msg');
     return 'An error occurred. Please try again.';
   }
 

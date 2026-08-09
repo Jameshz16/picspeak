@@ -73,12 +73,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   String _friendlyError(dynamic e) {
     final msg = e.toString();
-    if (msg.contains('user-not-found')) return 'No account found with this email.';
-    if (msg.contains('wrong-password')) return 'Incorrect password.';
+    // FlutterFire ≥5 returns 'invalid-credential' for both wrong email AND
+    // wrong password (replaces the old 'user-not-found' / 'wrong-password' codes).
+    if (msg.contains('invalid-credential')) {
+      return 'Invalid email or password.';
+    }
+    if (msg.contains('user-disabled')) return 'This account has been disabled.';
     if (msg.contains('invalid-email')) return 'Invalid email address.';
     if (msg.contains('too-many-requests')) return 'Too many attempts. Try again later.';
     if (msg.contains('network-request-failed')) return 'No internet connection.';
     if (msg.contains('cancelled')) return 'Sign-in was cancelled.';
+    // Log unexpected errors to help debugging (user sees generic message).
+    debugPrint('Login error (unexpected): $msg');
     return 'An error occurred. Please try again.';
   }
 
