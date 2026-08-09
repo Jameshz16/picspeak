@@ -1,5 +1,10 @@
 # PicSpeak — Firebase Setup Guide
 
+> **Note**: The app compiles and runs without Firebase. On first launch without
+> credentials, you will see the login screen but sign-in attempts will fail.
+> On desktop (Windows/macOS/Linux), Firebase is automatically skipped.
+> Follow this guide to enable full Firebase features.
+
 ## Prerequisites
 
 1. Install FlutterFire CLI:
@@ -19,11 +24,19 @@ flutterfire configure
 
 This will:
 - Detect your Firebase project
-- Generate `lib/firebase_options.dart`
+- Overwrite `lib/firebase_options.dart` with your real credentials
+  (The repo ships a stub with placeholder values — this replaces it.)
 - Set up `android/app/google-services.json`
 - Set up `ios/Runner/GoogleService-Info.plist`
 
 Select your project and both platforms (Android + iOS).
+
+> **Important**: `google-services.json` and `GoogleService-Info.plist` are
+> gitignored (they contain API keys). `firebase_options.dart` IS tracked but
+> ships with placeholder values. After running `flutterfire configure`, do NOT
+> commit your real credentials — the file is in `.gitignore` for a reason…
+> wait, actually the stub *is* tracked intentionally. Just don't push your
+> real keys to a public repo if you regenerate it.
 
 ## Step 2: Install dependencies
 

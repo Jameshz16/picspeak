@@ -1,3 +1,6 @@
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -26,9 +29,23 @@ import 'features/word_history/data/history_repository_impl.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+
+  // Firebase is only supported on web, Android, and iOS.
+  // Desktop platforms skip initialization — Firebase native plugins may be
+  // registered but the Dart-side options throw UnsupportedError for desktop.
+  if (kIsWeb || Platform.isAndroid || Platform.isIOS) {
+    try {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    } catch (e) {
+      debugPrint('Firebase initialization failed: $e');
+      debugPrint(
+        'Run "flutterfire configure" to set up Firebase credentials.\n'
+        'See FIREBASE_SETUP.md for detailed instructions.',
+      );
+    }
+  }
 
   final prefs = await SharedPreferences.getInstance();
 
@@ -76,16 +93,21 @@ void main() async {
   }
 
   // Initialize FCM token handler (silent if no user logged in).
-  // Attach catchError so async errors from getToken() never escape as
-  // unhandled Futures — making the "non-fatal FCM init" guarantee true.
-  final fcmHandler = FcmTokenHandler(
-    messaging: FirebaseMessaging.instance,
-    auth: FirebaseAuth.instance,
-    firestore: FirebaseFirestore.instance,
-  );
-  fcmHandler.init().catchError((e) {
-    debugPrint('FCM token handler async error: $e');
-  });
+  // Guarded: FirebaseMessaging/Auth/Firestore instances throw when no
+  // Firebase app is initialized (desktop platforms, or failed init above).
+  try {
+    final fcmHandler = FcmTokenHandler(
+      messaging: FirebaseMessaging.instance,
+      auth: FirebaseAuth.instance,
+      firestore: FirebaseFirestore.instance,
+    );
+    fcmHandler.init().catchError((e) {
+      debugPrint('FCM token handler async error: $e');
+    });
+  } catch (e) {
+    // Firebase not initialized — FCM unavailable, app continues.
+    debugPrint('FCM token handler skipped (Firebase unavailable): $e');
+  }
 
   runApp(
     ProviderScope(

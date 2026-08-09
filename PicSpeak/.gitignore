@@ -48,5 +48,7 @@ app.*.map.json
 .atl/
 
 # Firebase credentials (contains API keys — never commit)
+# firebase_options.dart is now tracked as a stub with placeholder values.
+# Running `flutterfire configure` will overwrite it with real credentials.
 **/google-services.json
-lib/firebase_options.dart
+**/GoogleService-Info.plist
