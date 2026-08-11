@@ -29,6 +29,38 @@ class NotificationRepositoryImpl implements NotificationRepository {
   String _key(String base) =>
       currentUserId.isEmpty ? base : '${currentUserId}_$base';
 
+  /// Reads a user-scoped bool with a one-time migration from the legacy
+  /// unscoped key. Once migrated the legacy key is removed so a future
+  /// different user on the same device never sees the previous user's data.
+  bool? _getBoolWithLegacy(String base) {
+    final scoped = _prefs.getBool(_key(base));
+    if (scoped != null) return scoped;
+    if (currentUserId.isEmpty) return null;
+    final legacy = _prefs.getBool(base);
+    if (legacy != null) {
+      _prefs.setBool(_key(base), legacy);
+      _prefs.remove(base);
+      return legacy;
+    }
+    return null;
+  }
+
+  /// Reads a user-scoped int with a one-time migration from the legacy
+  /// unscoped key. Once migrated the legacy key is removed so a future
+  /// different user on the same device never sees the previous user's data.
+  int? _getIntWithLegacy(String base) {
+    final scoped = _prefs.getInt(_key(base));
+    if (scoped != null) return scoped;
+    if (currentUserId.isEmpty) return null;
+    final legacy = _prefs.getInt(base);
+    if (legacy != null) {
+      _prefs.setInt(_key(base), legacy);
+      _prefs.remove(base);
+      return legacy;
+    }
+    return null;
+  }
+
   NotificationRepositoryImpl({
     required FlutterLocalNotificationsPlugin notificationsPlugin,
     required SharedPreferences prefs,
@@ -116,7 +148,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
     // Check daily cap
     final today = DateTime.now().toIso8601String().substring(0, 10);
     final capKey = _key('notif_sent_srs_$today');
-    if (_prefs.getBool(capKey) == true) return;
+    if (_getBoolWithLegacy('notif_sent_srs_$today') == true) return;
 
     // Get schedule time (customScheduleTime overrides learned time)
     final scheduleTime = await _getScheduledTime(
@@ -163,7 +195,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
     // Check daily cap
     final today = DateTime.now().toIso8601String().substring(0, 10);
     final capKey = _key('notif_sent_streak_$today');
-    if (_prefs.getBool(capKey) == true) return;
+    if (_getBoolWithLegacy('notif_sent_streak_$today') == true) return;
 
     // Get schedule time (customScheduleTime overrides learned time)
     final scheduleTime = await _getScheduledTime(
@@ -245,7 +277,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
     if (settings.streakRemindersEnabled) {
       // Cancel any existing streak alarm before scheduling a fresh one
       await cancelByType('streak');
-      final streak = _prefs.getInt(_key('study_streak')) ?? 0;
+      final streak = _getIntWithLegacy('study_streak') ?? 0;
       await scheduleStreakReminder(streak, settings: settings);
     } else {
       // Sub-feature explicitly disabled → ensure the recurring alarm is dead

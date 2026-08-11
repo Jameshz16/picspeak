@@ -13,6 +13,22 @@ class UsageTimeTracker {
   String _key(String base) =>
       currentUserId.isEmpty ? base : '${currentUserId}_$base';
 
+  /// Reads a user-scoped key with a one-time migration from the legacy
+  /// unscoped key. Once migrated the legacy key is removed so a future
+  /// different user on the same device never sees the previous user's data.
+  String? _getWithLegacy(String base) {
+    final scoped = _prefs.getString(_key(base));
+    if (scoped != null) return scoped;
+    if (currentUserId.isEmpty) return null;
+    final legacy = _prefs.getString(base);
+    if (legacy != null) {
+      _prefs.setString(_key(base), legacy);
+      _prefs.remove(base);
+      return legacy;
+    }
+    return null;
+  }
+
   /// Records the current app open timestamp.
   /// Keeps only the last 30 timestamps.
   Future<void> recordOpen() async {
@@ -81,7 +97,7 @@ class UsageTimeTracker {
   }
 
   List<String> _getTimestamps() {
-    final jsonString = _prefs.getString(_key('usage_timestamps'));
+    final jsonString = _getWithLegacy('usage_timestamps');
     if (jsonString == null) return [];
     try {
       final list = jsonDecode(jsonString) as List<dynamic>;

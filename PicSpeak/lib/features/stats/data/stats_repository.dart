@@ -16,6 +16,38 @@ class StatsRepository {
   String _key(String base) =>
       currentUserId.isEmpty ? base : '${currentUserId}_$base';
 
+  /// Reads a user-scoped string with a one-time migration from the legacy
+  /// unscoped key. Once migrated the legacy key is removed so a future
+  /// different user on the same device never sees the previous user's data.
+  String? _getStringWithLegacy(String base) {
+    final scoped = _prefs.getString(_key(base));
+    if (scoped != null) return scoped;
+    if (currentUserId.isEmpty) return null;
+    final legacy = _prefs.getString(base);
+    if (legacy != null) {
+      _prefs.setString(_key(base), legacy);
+      _prefs.remove(base);
+      return legacy;
+    }
+    return null;
+  }
+
+  /// Reads a user-scoped int with a one-time migration from the legacy
+  /// unscoped key. Once migrated the legacy key is removed so a future
+  /// different user on the same device never sees the previous user's data.
+  int? _getIntWithLegacy(String base) {
+    final scoped = _prefs.getInt(_key(base));
+    if (scoped != null) return scoped;
+    if (currentUserId.isEmpty) return null;
+    final legacy = _prefs.getInt(base);
+    if (legacy != null) {
+      _prefs.setInt(_key(base), legacy);
+      _prefs.remove(base);
+      return legacy;
+    }
+    return null;
+  }
+
   /// Compute stats from flashcard + history data.
   Future<LearningStats> computeStats({
     required FlashcardRepository flashcardRepo,
@@ -51,7 +83,7 @@ class StatsRepository {
     // Always accumulate reviewed count, even for same-day sessions
     _addReviewedToday(reviewedCount);
 
-    final lastStudy = _prefs.getString(_key('last_study_date'));
+    final lastStudy = _getStringWithLegacy('last_study_date');
     if (lastStudy == today) return;
 
     final yesterday = DateTime.now()
@@ -59,7 +91,7 @@ class StatsRepository {
         .toIso8601String()
         .substring(0, 10);
 
-    int streak = _prefs.getInt(_key('study_streak')) ?? 0;
+    int streak = _getIntWithLegacy('study_streak') ?? 0;
 
     if (lastStudy == yesterday) {
       streak++;
@@ -73,10 +105,10 @@ class StatsRepository {
 
   int _updateStreak() {
     final today = DateTime.now().toIso8601String().substring(0, 10);
-    final lastStudy = _prefs.getString(_key('last_study_date'));
+    final lastStudy = _getStringWithLegacy('last_study_date');
 
     if (lastStudy == today) {
-      return _prefs.getInt(_key('study_streak')) ?? 0;
+      return _getIntWithLegacy('study_streak') ?? 0;
     }
 
     final yesterday = DateTime.now()
@@ -85,7 +117,7 @@ class StatsRepository {
         .substring(0, 10);
 
     if (lastStudy == yesterday) {
-      return _prefs.getInt(_key('study_streak')) ?? 0;
+      return _getIntWithLegacy('study_streak') ?? 0;
     }
 
     return 0;
@@ -93,17 +125,17 @@ class StatsRepository {
 
   int _getReviewedToday() {
     final today = DateTime.now().toIso8601String().substring(0, 10);
-    final savedDate = _prefs.getString(_key('reviewed_today_date'));
+    final savedDate = _getStringWithLegacy('reviewed_today_date');
     if (savedDate != today) return 0;
-    return _prefs.getInt(_key('reviewed_today_count')) ?? 0;
+    return _getIntWithLegacy('reviewed_today_count') ?? 0;
   }
 
   void _addReviewedToday(int count) {
     final today = DateTime.now().toIso8601String().substring(0, 10);
-    final savedDate = _prefs.getString(_key('reviewed_today_date'));
+    final savedDate = _getStringWithLegacy('reviewed_today_date');
     int current = 0;
     if (savedDate == today) {
-      current = _prefs.getInt(_key('reviewed_today_count')) ?? 0;
+      current = _getIntWithLegacy('reviewed_today_count') ?? 0;
     }
     _prefs.setInt(_key('reviewed_today_count'), current + count);
     _prefs.setString(_key('reviewed_today_date'), today);

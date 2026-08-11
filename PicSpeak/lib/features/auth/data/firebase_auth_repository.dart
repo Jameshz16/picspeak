@@ -74,11 +74,14 @@ class FirebaseAuthRepository implements AuthRepository {
 
   @override
   Future<void> signOut() async {
-    await clearLocalData();
+    // Sign out remotely FIRST. Local uid-scoped data is only cleared once
+    // the remote sign-out succeeded, so a failed sign-out (offline, etc.)
+    // never destroys local data while the session is still active.
     await Future.wait([
       _auth.signOut(),
       _googleSignIn.signOut(),
     ]);
+    await clearLocalData();
   }
 
   @override
@@ -103,8 +106,16 @@ class FirebaseAuthRepository implements AuthRepository {
 
   @override
   Future<void> deleteAccountAndClearData() async {
-    await clearLocalData();
+    // Delete the Firebase account FIRST. Local uid-scoped data is only
+    // cleared once the remote deletion succeeded, so a failed delete
+    // (stale credentials, offline) never destroys local data.
     await deleteAccount();
+    try {
+      await clearLocalData();
+    } catch (_) {
+      // Local data cleanup failed, but the remote account is already
+      // deleted. The caller must still navigate to login.
+    }
   }
 
   @override

@@ -242,8 +242,19 @@ class SettingsScreen extends ConsumerWidget {
               );
               if (confirmed == true) {
                 final repo = ref.read(authRepositoryProvider);
-                await repo.deleteAccountAndClearData();
-                if (context.mounted) context.go('/login');
+                try {
+                  await repo.deleteAccountAndClearData();
+                  if (context.mounted) context.go('/login');
+                } catch (_) {
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Could not delete your account. Please try again.',
+                      ),
+                    ),
+                  );
+                }
               }
             },
           ),
