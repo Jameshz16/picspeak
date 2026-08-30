@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/nb_animations.dart';
 import '../../../app/theme.dart';
 import '../../auth/data/auth_providers.dart';
 import '../../auth/domain/auth_repository.dart';
@@ -23,7 +24,7 @@ class SettingsScreen extends ConsumerWidget {
       ),
       body: settingsAsync.when(
         data: (settings) => _buildSettingsList(context, ref, settings, themeMode),
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: NbLoadingBlock()),
         error: (err, _) => Center(child: Text('Error: $err')),
       ),
     );
@@ -41,7 +42,7 @@ class SettingsScreen extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        _SectionHeader(title: 'Idioma / Language'),
+        _SectionHeader(title: 'Idioma'),
         Card(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -54,7 +55,7 @@ class SettingsScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'App language',
+                        'Idioma de la app',
                         style: TextStyle(fontWeight: FontWeight.w600),
                       ),
                       Text(
@@ -73,7 +74,7 @@ class SettingsScreen extends ConsumerWidget {
                   items: const [
                     DropdownMenuItem(value: 'es', child: Text('Español')),
                     DropdownMenuItem(value: 'en', child: Text('English')),
-                    DropdownMenuItem(value: 'system', child: Text('System')),
+                    DropdownMenuItem(value: 'system', child: Text('Sistema')),
                   ],
                   onChanged: (value) {
                     if (value != null) {
@@ -87,7 +88,7 @@ class SettingsScreen extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 16),
-        _SectionHeader(title: 'Voz / Voice'),
+        _SectionHeader(title: 'Voz'),
         Card(
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -100,7 +101,7 @@ class SettingsScreen extends ConsumerWidget {
                     const SizedBox(width: 16),
                     const Expanded(
                       child: Text(
-                        'Voice speed',
+                        'Velocidad de voz',
                         style: TextStyle(fontWeight: FontWeight.w600),
                       ),
                     ),
@@ -137,7 +138,7 @@ class SettingsScreen extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 16),
-        _SectionHeader(title: 'Tema / Theme'),
+        _SectionHeader(title: 'Tema'),
         Card(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -151,7 +152,7 @@ class SettingsScreen extends ConsumerWidget {
                 const SizedBox(width: 16),
                 const Expanded(
                   child: Text(
-                    'Appearance',
+                    'Apariencia',
                     style: TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ),
@@ -159,12 +160,12 @@ class SettingsScreen extends ConsumerWidget {
                   segments: const [
                     ButtonSegment(
                       value: ThemeMode.light,
-                      label: Text('Light'),
+                      label: Text('Claro'),
                       icon: Icon(Icons.light_mode),
                     ),
                     ButtonSegment(
                       value: ThemeMode.dark,
-                      label: Text('Dark'),
+                      label: Text('Oscuro'),
                       icon: Icon(Icons.dark_mode),
                     ),
                     ButtonSegment(
@@ -188,12 +189,12 @@ class SettingsScreen extends ConsumerWidget {
         const SizedBox(height: 32),
         const NotificationSettingsSection(),
         const SizedBox(height: 32),
-        _SectionHeader(title: 'Learning'),
+        _SectionHeader(title: 'Mi progreso'),
         Card(
           child: ListTile(
             leading: const Icon(Icons.bar_chart),
-            title: const Text('My Progress'),
-            subtitle: const Text('View your learning stats'),
+            title: const Text('Mi Historia'),
+            subtitle: const Text('Ver tu progreso de aprendizaje'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/stats'),
           ),
@@ -202,7 +203,7 @@ class SettingsScreen extends ConsumerWidget {
         Card(
           child: ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),
-            title: const Text('Sign Out', style: TextStyle(color: Colors.red)),
+            title: const Text('Cerrar sesión', style: TextStyle(color: Colors.red)),
             onTap: () async {
               final repo = ref.read(authRepositoryProvider);
               await repo.signOut();
@@ -214,28 +215,28 @@ class SettingsScreen extends ConsumerWidget {
         Card(
           child: ListTile(
             leading: const Icon(Icons.delete_forever, color: Colors.red),
-            title: const Text('Delete Account',
+            title: const Text('Eliminar cuenta',
                 style: TextStyle(color: Colors.red)),
             onTap: () async {
               final confirmed = await showDialog<bool>(
                 context: context,
                 builder: (ctx) => AlertDialog(
-                  title: const Text('Delete Account'),
+                  title: const Text('Eliminar cuenta'),
                   content: const Text(
-                    'This will permanently delete your account and all your '
-                    'data. This action cannot be undone.',
+                    'Esto eliminará permanentemente tu cuenta y todos tus '
+                    'datos. Esta acción no se puede deshacer.',
                   ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(ctx).pop(false),
-                      child: const Text('Cancel'),
+                      child: const Text('Cancelar'),
                     ),
                     TextButton(
                       onPressed: () => Navigator.of(ctx).pop(true),
                       style: TextButton.styleFrom(
                         foregroundColor: Colors.red,
                       ),
-                      child: const Text('Delete'),
+                      child: const Text('Eliminar'),
                     ),
                   ],
                 ),
@@ -250,7 +251,7 @@ class SettingsScreen extends ConsumerWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text(
-                        'Could not delete your account. Please try again.',
+                        'No se pudo eliminar tu cuenta. Intenta de nuevo.',
                       ),
                     ),
                   );
@@ -289,7 +290,7 @@ class SettingsScreen extends ConsumerWidget {
       case 'en':
         return 'English';
       default:
-        return 'System default';
+        return 'Sistema';
     }
   }
 }

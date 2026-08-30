@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/nb_animations.dart';
 import '../../../core/services/tts_service.dart';
 import '../../app_settings/data/settings_providers.dart';
 import '../../object_recognition/domain/recognized_word.dart';
@@ -147,7 +148,7 @@ class _FlashcardReviewScreenState extends ConsumerState<FlashcardReviewScreen>
 
     if (_isLoading) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(child: NbLoadingBlock()),
       );
     }
 
@@ -156,7 +157,7 @@ class _FlashcardReviewScreenState extends ConsumerState<FlashcardReviewScreen>
         if (mounted) context.pop();
       });
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(child: NbLoadingBlock()),
       );
     }
 
@@ -246,7 +247,7 @@ class _FlashcardReviewScreenState extends ConsumerState<FlashcardReviewScreen>
 
     return Card(
       clipBehavior: Clip.antiAlias,
-      elevation: 4,
+      elevation: 0,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -306,7 +307,7 @@ class _FlashcardReviewScreenState extends ConsumerState<FlashcardReviewScreen>
 
     return Card(
       clipBehavior: Clip.antiAlias,
-      elevation: 4,
+      elevation: 0,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -378,16 +379,20 @@ class _FlashcardReviewScreenState extends ConsumerState<FlashcardReviewScreen>
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: _restart,
-                icon: const Icon(Icons.replay),
-                label: const Text('Restart review'),
+              NbPressable(
+                child: ElevatedButton.icon(
+                  onPressed: _restart,
+                  icon: const Icon(Icons.replay),
+                  label: const Text('Restart review'),
+                ),
               ),
               const SizedBox(height: 12),
-              OutlinedButton.icon(
-                onPressed: () => context.pop(),
-                icon: const Icon(Icons.arrow_back),
-                label: const Text('Go back'),
+              NbPressable(
+                child: OutlinedButton.icon(
+                  onPressed: () => context.pop(),
+                  icon: const Icon(Icons.arrow_back),
+                  label: const Text('Go back'),
+                ),
               ),
             ],
           ),

@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../app/nb_animations.dart';
+import '../../../app/theme.dart';
 import '../../flashcard_review/data/flashcard_providers.dart';
 import '../../object_recognition/domain/recognized_word.dart';
 import '../data/history_providers.dart';
@@ -33,19 +35,19 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('History'),
+        title: const Text('Historial'),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(56),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: TextField(
               decoration: InputDecoration(
-                hintText: 'Search by English or Spanish...',
+                hintText: 'Buscar en inglés o español...',
                 prefixIcon: const Icon(Icons.search),
                 filled: true,
                 fillColor: theme.colorScheme.surfaceContainerHighest,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(NbRadius.xs),
                   borderSide: BorderSide.none,
                 ),
               ),
@@ -60,7 +62,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         future: _loadHistory(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: NbLoadingBlock());
           }
 
           final entries = snapshot.data ?? [];
@@ -74,13 +76,16 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             itemCount: entries.length,
             itemBuilder: (context, index) {
               final word = entries[index];
-              return _HistoryListTile(
-                word: word,
-                onTap: () {
-                  context.push('/result', extra: {
-                    'word': word,
-                  });
-                },
+              return NbPopIn(
+                delay: Duration(milliseconds: index * 60),
+                child: _HistoryListTile(
+                  word: word,
+                  onTap: () {
+                    context.push('/result', extra: {
+                      'word': word,
+                    });
+                  },
+                ),
               );
             },
           );
@@ -148,13 +153,13 @@ class _HistoryListTileState extends ConsumerState<_HistoryListTile> {
       margin: const EdgeInsets.only(bottom: 10),
       child: InkWell(
         onTap: widget.onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(NbRadius.xs),
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(NbRadius.xs),
                 child: SizedBox(
                   width: 64,
                   height: 64,
@@ -240,17 +245,17 @@ class _EmptyHistoryView extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               hasQuery
-                  ? 'No results found for your search.'
+                  ? 'No se encontraron resultados para tu búsqueda.'
                   : 'Aún no has escaneado ninguna palabra',
               style: Theme.of(context).textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),
             if (!hasQuery) ...[
               const SizedBox(height: 8),
-              const Text(
-                'Take a photo to start building your history.',
-                textAlign: TextAlign.center,
-              ),
+                const Text(
+                  'Toma una foto para empezar tu historial.',
+                  textAlign: TextAlign.center,
+                ),
             ],
           ],
         ),

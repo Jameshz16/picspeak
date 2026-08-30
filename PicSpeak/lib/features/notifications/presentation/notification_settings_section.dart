@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../../../app/theme.dart';
 import '../../app_settings/data/settings_providers.dart';
 import '../../app_settings/domain/app_settings.dart';
 import '../data/notification_providers.dart';
@@ -82,7 +83,7 @@ class _NotificationSettingsSectionState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _SectionHeader(title: 'Notifications'),
+        _SectionHeader(title: 'Notificaciones'),
         Card(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -91,10 +92,10 @@ class _NotificationSettingsSectionState
                 // Master toggle
                 SwitchListTile(
                   title: const Text(
-                    'Enable Notifications',
+                    'Activar notificaciones',
                     style: TextStyle(fontWeight: FontWeight.w600),
                   ),
-                  subtitle: const Text('Receive SRS and streak reminders'),
+                  subtitle: const Text('Recibe recordatorios de repaso y racha'),
                   secondary: const Icon(Icons.notifications),
                   value: settings.notificationsEnabled,
                   onChanged: _isLoading
@@ -114,8 +115,8 @@ class _NotificationSettingsSectionState
                   Padding(
                     padding: const EdgeInsets.only(left: 32),
                     child: SwitchListTile(
-                      title: const Text('SRS Review Reminders'),
-                      subtitle: const Text('Remind you to review due cards'),
+                      title: const Text('Recordatorios de repaso'),
+                      subtitle: const Text('Te avisa cuando hay tarjetas por repasar'),
                       value: settings.srsRemindersEnabled,
                       onChanged: (value) {
                         final updated =
@@ -129,8 +130,8 @@ class _NotificationSettingsSectionState
                   Padding(
                     padding: const EdgeInsets.only(left: 32),
                     child: SwitchListTile(
-                      title: const Text('Streak Reminders'),
-                      subtitle: const Text('Protect your learning streak'),
+                      title: const Text('Recordatorios de racha'),
+                      subtitle: const Text('Protege tu racha de aprendizaje'),
                       value: settings.streakRemindersEnabled,
                       onChanged: (value) {
                         final updated =
@@ -143,8 +144,8 @@ class _NotificationSettingsSectionState
                   const Divider(),
                   // Quiet hours toggle
                   SwitchListTile(
-                    title: const Text('Quiet Hours'),
-                    subtitle: const Text('No notifications between 9 PM and 8 AM'),
+                    title: const Text('Horario silencioso'),
+                    subtitle: const Text('Sin notificaciones entre 9 PM y 8 AM'),
                     secondary: const Icon(Icons.nightlight_round),
                     value: settings.quietHoursEnabled,
                     onChanged: (value) {
@@ -158,11 +159,11 @@ class _NotificationSettingsSectionState
                   // Custom schedule time
                   ListTile(
                     leading: const Icon(Icons.schedule),
-                    title: const Text('Custom Schedule Time'),
+                    title: const Text('Horario personalizado'),
                     subtitle: Text(
                       settings.customScheduleTime != null
-                          ? 'Set to ${settings.customScheduleTime}'
-                          : 'Using learned schedule time',
+                          ? 'Configurado a las ${settings.customScheduleTime}'
+                          : 'Usando horario aprendido',
                     ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -317,7 +318,7 @@ class _PermissionDeniedBanner extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.errorContainer,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(NbRadius.xs),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -334,8 +335,8 @@ class _PermissionDeniedBanner extends StatelessWidget {
               Expanded(
                 child: Text(
                   isPermanently
-                      ? 'Notification permission is permanently denied. Please enable it in app settings to receive reminders.'
-                      : 'Notification permission was denied. Tap below to try again.',
+                      ? 'El permiso de notificaciones fue denegado permanentemente. Habilítalo en configuración para recibir recordatorios.'
+                      : 'El permiso de notificaciones fue denegado. Toca abajo para intentar de nuevo.',
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onErrorContainer,
                     fontSize: 13,
@@ -349,13 +350,13 @@ class _PermissionDeniedBanner extends StatelessWidget {
             TextButton.icon(
               onPressed: () => openAppSettings(),
               icon: const Icon(Icons.settings, size: 18),
-              label: const Text('Open Settings'),
+              label: const Text('Abrir Configuración'),
             )
           else
             TextButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh, size: 18),
-              label: const Text('Retry'),
+              label: const Text('Reintentar'),
             ),
         ],
       ),

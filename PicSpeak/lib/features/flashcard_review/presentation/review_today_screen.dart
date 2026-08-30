@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/nb_animations.dart';
 import '../../../core/services/tts_service.dart';
 import '../../app_settings/data/settings_providers.dart';
 import '../../object_recognition/domain/recognized_word.dart';
@@ -152,7 +153,7 @@ class _ReviewTodayScreenState extends ConsumerState<ReviewTodayScreen>
 
     if (_isLoading) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(child: NbLoadingBlock()),
       );
     }
 
@@ -168,7 +169,7 @@ class _ReviewTodayScreenState extends ConsumerState<ReviewTodayScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('${_currentIndex + 1} de ${_dueCards.length}'),
+        title: Text('Palabra ${_currentIndex + 1} de ${_dueCards.length}'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -178,8 +179,8 @@ class _ReviewTodayScreenState extends ConsumerState<ReviewTodayScreen>
             padding: const EdgeInsets.only(right: 16),
             child: Center(
               child: Text(
-                '$_reviewedCount reviewed',
-                style: theme.textTheme.bodySmall?.copyWith(
+                'Toca para revelar',
+                style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
@@ -237,7 +238,7 @@ class _ReviewTodayScreenState extends ConsumerState<ReviewTodayScreen>
               // SRS Rating buttons
               if (_isFlipped) ...[
                 Text(
-                  'How well did you know this?',
+                  '¿Qué tan bien la conocías?',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
@@ -247,7 +248,7 @@ class _ReviewTodayScreenState extends ConsumerState<ReviewTodayScreen>
                   children: [
                     Expanded(
                       child: _RatingButton(
-                        label: 'Again',
+                        label: 'Otra vez',
                         icon: Icons.close,
                         color: Colors.red,
                         onPressed: () => _rateCard(0),
@@ -256,7 +257,7 @@ class _ReviewTodayScreenState extends ConsumerState<ReviewTodayScreen>
                     const SizedBox(width: 8),
                     Expanded(
                       child: _RatingButton(
-                        label: 'Hard',
+                        label: 'Difícil',
                         icon: Icons.sentiment_dissatisfied,
                         color: Colors.orange,
                         onPressed: () => _rateCard(1),
@@ -265,7 +266,7 @@ class _ReviewTodayScreenState extends ConsumerState<ReviewTodayScreen>
                     const SizedBox(width: 8),
                     Expanded(
                       child: _RatingButton(
-                        label: 'Good',
+                        label: 'Bien',
                         icon: Icons.sentiment_satisfied,
                         color: Colors.green,
                         onPressed: () => _rateCard(2),
@@ -274,7 +275,7 @@ class _ReviewTodayScreenState extends ConsumerState<ReviewTodayScreen>
                     const SizedBox(width: 8),
                     Expanded(
                       child: _RatingButton(
-                        label: 'Easy',
+                        label: 'Fácil',
                         icon: Icons.sentiment_very_satisfied,
                         color: Colors.blue,
                         onPressed: () => _rateCard(3),
@@ -346,7 +347,7 @@ class _ReviewTodayScreenState extends ConsumerState<ReviewTodayScreen>
 
     return Card(
       clipBehavior: Clip.antiAlias,
-      elevation: 4,
+      elevation: 0,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -409,7 +410,7 @@ class _ReviewTodayScreenState extends ConsumerState<ReviewTodayScreen>
 
     return Card(
       clipBehavior: Clip.antiAlias,
-      elevation: 4,
+      elevation: 0,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -470,7 +471,7 @@ class _ReviewTodayScreenState extends ConsumerState<ReviewTodayScreen>
   Widget _buildEmptyView(ThemeData theme) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Today\'s Review'),
+        title: const Text('Repaso del día'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -489,29 +490,33 @@ class _ReviewTodayScreenState extends ConsumerState<ReviewTodayScreen>
               ),
               const SizedBox(height: 24),
               Text(
-                'All caught up!',
+                '¡Lens está orgulloso!',
                 style: theme.textTheme.headlineMedium,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
               Text(
-                'No cards to review right now. Come back later or scan new words!',
+                'No hay nada que repasar. ¡Sigue explorando o descubre nuevas palabras!',
                 style: theme.textTheme.bodyLarge?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: () => context.go('/'),
-                icon: const Icon(Icons.camera_alt),
-                label: const Text('Scan new words'),
+              NbPressable(
+                child: ElevatedButton.icon(
+                  onPressed: () => context.go('/'),
+                  icon: const Icon(Icons.camera_alt),
+                  label: const Text('Descubrir nuevas palabras'),
+                ),
               ),
               const SizedBox(height: 12),
-              OutlinedButton.icon(
-                onPressed: () => context.go('/favorites'),
-                icon: const Icon(Icons.favorite),
-                label: const Text('View all favorites'),
+              NbPressable(
+                child: OutlinedButton.icon(
+                  onPressed: () => context.go('/favorites'),
+                  icon: const Icon(Icons.favorite),
+                  label: const Text('Ver todos los favoritos'),
+                ),
               ),
             ],
           ),
@@ -523,7 +528,7 @@ class _ReviewTodayScreenState extends ConsumerState<ReviewTodayScreen>
   Widget _buildCompletionView(ThemeData theme) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Review Complete'),
+        title: const Text('Repaso completo'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -542,29 +547,33 @@ class _ReviewTodayScreenState extends ConsumerState<ReviewTodayScreen>
               ),
               const SizedBox(height: 24),
               Text(
-                '¡Review completado!',
+                '¡Completaste tu aventura de hoy!',
                 style: theme.textTheme.headlineMedium,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
               Text(
-                'You reviewed $_reviewedCount cards. Great job!',
+                '$_reviewedCount palabras más cerca del inglés. ¡Sigue así!',
                 style: theme.textTheme.bodyLarge?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: () => context.go('/'),
-                icon: const Icon(Icons.camera_alt),
-                label: const Text('Scan new words'),
+              NbPressable(
+                child: ElevatedButton.icon(
+                  onPressed: () => context.go('/'),
+                  icon: const Icon(Icons.camera_alt),
+                  label: const Text('Seguir explorando'),
+                ),
               ),
               const SizedBox(height: 12),
-              OutlinedButton.icon(
-                onPressed: () => context.pop(),
-                icon: const Icon(Icons.arrow_back),
-                label: const Text('Go back'),
+              NbPressable(
+                child: OutlinedButton.icon(
+                  onPressed: () => context.pop(),
+                  icon: const Icon(Icons.arrow_back),
+                  label: const Text('Volver'),
+                ),
               ),
             ],
           ),
@@ -634,20 +643,22 @@ class _TtsButton extends StatelessWidget {
       message: available
           ? label
           : 'Voice not available for this language',
-      child: ElevatedButton.icon(
-        onPressed: available && !isSpeaking
-            ? () => onSpeak(text, locale)
-            : null,
-        icon: isSpeaking
-            ? const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : const Icon(Icons.volume_up),
-        label: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(label),
+      child: NbPressable(
+        child: ElevatedButton.icon(
+          onPressed: available && !isSpeaking
+              ? () => onSpeak(text, locale)
+              : null,
+          icon: isSpeaking
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.volume_up),
+          label: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(label),
+          ),
         ),
       ),
     );

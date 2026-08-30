@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'app_shell.dart';
+import 'nb_animations.dart';
 import '../features/auth/presentation/auth_gate.dart';
 import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/presentation/register_screen.dart';
@@ -21,6 +22,7 @@ import '../features/word_history/presentation/history_screen.dart';
 import '../features/app_settings/presentation/settings_screen.dart';
 import '../features/onboarding/presentation/onboarding_screen.dart';
 import '../features/onboarding/data/onboarding_providers.dart';
+import '../features/premium/presentation/paywall_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
@@ -62,11 +64,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Auth routes
       GoRoute(
         path: '/login',
-        builder: (context, state) => const LoginScreen(),
+        pageBuilder: (context, state) =>
+            nbHardRouteTransition(const LoginScreen()),
       ),
       GoRoute(
         path: '/register',
-        builder: (context, state) => const RegisterScreen(),
+        pageBuilder: (context, state) =>
+            nbHardRouteTransition(const RegisterScreen()),
       ),
 
       // Main app shell
@@ -105,45 +109,58 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Standalone routes (outside shell)
       GoRoute(
         path: '/result',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final extra = state.extra as Map<String, dynamic>? ?? {};
           final word = extra['word'] as RecognizedWord?;
           final allLabels = (extra['allLabels'] as List<dynamic>?)
               ?.whereType<LabeledObject>()
               .toList();
+          final isWordOfDay = extra['isWordOfDay'] as bool? ?? false;
           if (word == null) {
-            return const Scaffold(
-              body: Center(child: Text('No word data provided.')),
+            return nbHardRouteTransition(const Scaffold(
+                body: Center(child: Text('No word data provided.')),
+              ),
             );
           }
-          return ResultScreen(
-            word: word,
-            allLabels: allLabels ?? [],
+          return nbHardRouteTransition(ResultScreen(
+              word: word,
+              allLabels: allLabels ?? [],
+              isWordOfDay: isWordOfDay,
+            ),
           );
         },
       ),
       GoRoute(
         path: '/review',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final indexStr = state.uri.queryParameters['index'];
           final initialIndex = int.tryParse(indexStr ?? '') ?? 0;
-          return FlashcardReviewScreen(initialIndex: initialIndex);
+          return nbHardRouteTransition(FlashcardReviewScreen(initialIndex: initialIndex),
+          );
         },
       ),
       GoRoute(
         path: '/review-today',
-        builder: (context, state) => const ReviewTodayScreen(),
+        pageBuilder: (context, state) => nbHardRouteTransition(const ReviewTodayScreen(),
+        ),
       ),
       GoRoute(
         path: '/category/:id',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final categoryId = state.pathParameters['id']!;
-          return CategoryWordsScreen(categoryId: categoryId);
+          return nbHardRouteTransition(CategoryWordsScreen(categoryId: categoryId),
+          );
         },
       ),
       GoRoute(
         path: '/onboarding',
-        builder: (context, state) => const OnboardingScreen(),
+        pageBuilder: (context, state) => nbHardRouteTransition(const OnboardingScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/paywall',
+        pageBuilder: (context, state) => nbHardRouteTransition(const PaywallScreen(),
+        ),
       ),
     ],
   );

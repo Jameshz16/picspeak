@@ -2,6 +2,8 @@ import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
+import '../../../app/theme.dart';
+
 class ObjectOverlay extends StatefulWidget {
   final String photoPath;
   final Rect? boundingBox;
@@ -165,7 +167,7 @@ class _ScannerOverlayPainter extends CustomPainter {
 
     // 4. Draw cyan glowing outline around the target object
     final glowPaint = Paint()
-      ..color = Colors.cyanAccent.withOpacity(0.3)
+      ..color = NbColors.tertiary.withOpacity(0.3)
       ..style = ui.PaintingStyle.stroke
       ..strokeWidth = 6.0
       ..maskFilter = const MaskFilter.blur(ui.BlurStyle.normal, 4.0);
@@ -176,7 +178,7 @@ class _ScannerOverlayPainter extends CustomPainter {
     );
 
     final borderPaint = Paint()
-      ..color = Colors.cyanAccent
+      ..color = NbColors.tertiary
       ..style = ui.PaintingStyle.stroke
       ..strokeWidth = 2.5;
 

@@ -1,9 +1,9 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/nb_animations.dart';
+import '../../../app/theme.dart';
 import '../../../core/data/label_map_repository.dart';
 import '../../../core/services/tts_service.dart';
 import '../../flashcard_review/data/flashcard_providers.dart';
@@ -11,17 +11,20 @@ import '../../word_history/data/history_providers.dart';
 import '../domain/labeled_object.dart';
 import '../domain/recognized_word.dart';
 import 'object_overlay.dart';
+import 'scan_animations.dart';
 import 'tts_play_notifier.dart';
 
 
 class ResultScreen extends ConsumerStatefulWidget {
   final RecognizedWord word;
   final List<LabeledObject> allLabels;
+  final bool isWordOfDay;
 
   const ResultScreen({
     super.key,
     required this.word,
     this.allLabels = const [],
+    this.isWordOfDay = false,
   });
 
   @override
@@ -33,6 +36,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
   bool _esAvailable = false;
   bool _isSaving = false;
   bool _isSaved = false;
+  bool _wordRevealed = false;
   late RecognizedWord _currentWord;
 
   @override
@@ -66,7 +70,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('This word is already in your favorites.'),
+              content: Text('Lens ya la tiene guardada ✨'),
             ),
           );
         }
@@ -75,7 +79,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
         await repo.save(_currentWord);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Added to favorites!')),
+            const SnackBar(content: Text('Lens lo recordará por ti ❤️')),
           );
           setState(() => _isSaved = true);
         }
@@ -121,7 +125,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Result'),
+        title: const Text('Descubrimiento'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go('/'),
@@ -132,55 +136,123 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Photo with overlay
+            // Photo with overlay + scanning line animation
             ClipRRect(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(NbRadius.xs),
               child: AspectRatio(
                 aspectRatio: 4 / 3,
-                child: ObjectOverlay(
-                  photoPath: _currentWord.photoPath,
-                  boundingBox: _currentWord.boundingBox,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    ObjectOverlay(
+                      photoPath: _currentWord.photoPath,
+                      boundingBox: _currentWord.boundingBox,
+                    ),
+                    const ScanLineOverlay(),
+                  ],
                 ),
               ),
             ),
             const SizedBox(height: 24),
 
-            // Primary word card
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    Text(
-                      _currentWord.enLabel,
-                      style: theme.textTheme.headlineMedium,
-                      textAlign: TextAlign.center,
+            // Word of the Day celebration
+            if (widget.isWordOfDay) ...[
+              NbPopIn(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.amber.shade400,
+                        Colors.orange.shade400,
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _currentWord.esLabel,
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        color: hasTranslation
-                            ? theme.colorScheme.secondary
-                            : Colors.orange,
+                    borderRadius: BorderRadius.circular(NbRadius.xs),
+                    border: Border.all(color: Colors.amber.shade700, width: 2),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.emoji_events,
+                        size: 32,
+                        color: Colors.white,
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                    if (!hasTranslation) ...[
-                      const SizedBox(height: 8),
-                      Chip(
-                        label: const Text(RecognizedWord.noTranslationSentinel),
-                        backgroundColor: Colors.orange.shade100,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              '¡Reto del día completado!',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            Text(
+                              'Encontraste la palabra del día',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.9),
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
-                    const SizedBox(height: 12),
-                    Text(
-                      'Confidence: ${(_currentWord.confidence * 100).toStringAsFixed(1)}%',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            // Primary word card — floats like the Stitch label
+            FloatingLabel(
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      NbTypewriter(
+                        text: _currentWord.enLabel,
+                        style: theme.textTheme.headlineMedium,
+                        duration: const Duration(milliseconds: 350),
+                        onComplete: () {
+                          if (mounted) setState(() => _wordRevealed = true);
+                        },
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 8),
+                      // Spanish translation fades in after typewriter
+                      AnimatedOpacity(
+                        opacity: _wordRevealed ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 200),
+                        child: Column(
+                          children: [
+                            Text(
+                              _currentWord.esLabel,
+                              style: theme.textTheme.headlineSmall?.copyWith(
+                                color: hasTranslation
+                                    ? theme.colorScheme.secondary
+                                    : Colors.orange,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            if (!hasTranslation) ...[
+                              const SizedBox(height: 8),
+                              Chip(
+                                label: const Text(RecognizedWord.noTranslationSentinel),
+                                backgroundColor: Colors.orange.shade100,
+                              ),
+                            ],
+                            const SizedBox(height: 12),
+                            const SizedBox(height: 4),
+                            _ConfidenceChip(confidence: _currentWord.confidence),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -219,11 +291,13 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
             const SizedBox(height: 24),
 
             // Favorite button
-            ElevatedButton.icon(
-              onPressed: _isSaving || _isSaved ? null : _onFavorite,
-              icon: Icon(_isSaved ? Icons.favorite : Icons.favorite_border),
-              label: Text(
-                _isSaved ? 'Saved to favorites' : 'Add to favorites',
+            NbPressable(
+              child: ElevatedButton.icon(
+                onPressed: _isSaving || _isSaved ? null : _onFavorite,
+                icon: Icon(_isSaved ? Icons.favorite : Icons.favorite_border),
+                label: Text(
+                  _isSaved ? 'Guardado' : 'Guardar como favorito',
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -231,7 +305,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
             // Other recognized labels — tappable to switch
             if (widget.allLabels.length > 1) ...[
               const Text(
-                'Also recognized:',
+                'También podría ser:',
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
@@ -254,12 +328,50 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
             ],
 
             // Scan again
-            OutlinedButton.icon(
-              onPressed: () => context.go('/'),
-              icon: const Icon(Icons.camera_alt),
-              label: const Text('Scan again'),
+            NbPressable(
+              child: OutlinedButton.icon(
+                onPressed: () => context.go('/'),
+                icon: const Icon(Icons.camera_alt),
+                label: const Text('Descubrir otro objeto'),
+              ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Small decorative confidence chip — low prominence, not a primary feature.
+class _ConfidenceChip extends StatelessWidget {
+  final double confidence;
+
+  const _ConfidenceChip({required this.confidence});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final percent = (confidence * 100).round();
+
+    final (label, color) = switch (percent) {
+      >= 90 => ('¡Lens está seguro!', Colors.green),
+      >= 70 => ('Lens cree que es...', Colors.blue),
+      >= 50 => ('¿Será un...?', Colors.orange),
+      _ => ('Intenta de nuevo', Colors.red),
+    };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Text(
+        '$label  $percent%',
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: color,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
@@ -289,20 +401,22 @@ class _TtsButton extends StatelessWidget {
       message: available
           ? label
           : 'Voice not available for this language',
-      child: ElevatedButton.icon(
-        onPressed: available && !isSpeaking
-            ? () => onSpeak(text, locale)
-            : null,
-        icon: isSpeaking
-            ? const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : const Icon(Icons.volume_up),
-        label: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(label),
+      child: NbPressable(
+        child: ElevatedButton.icon(
+          onPressed: available && !isSpeaking
+              ? () => onSpeak(text, locale)
+              : null,
+          icon: isSpeaking
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.volume_up),
+          label: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(label),
+          ),
         ),
       ),
     );

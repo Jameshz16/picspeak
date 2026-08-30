@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/nb_animations.dart';
+import '../../../app/theme.dart';
 import '../../object_recognition/domain/recognized_word.dart';
 import '../data/flashcard_providers.dart';
 
@@ -33,7 +35,7 @@ class _FlashcardListScreenState extends ConsumerState<FlashcardListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Favorites'),
+        title: const Text('Favoritos'),
       ),
       body: Column(
         children: [
@@ -54,11 +56,11 @@ class _FlashcardListScreenState extends ConsumerState<FlashcardListScreen> {
                       theme.colorScheme.tertiary,
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(NbRadius.xs),
                 ),
                 child: InkWell(
                   onTap: () => context.push('/review-today'),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(NbRadius.xs),
                   child: Row(
                     children: [
                       const Icon(
@@ -72,14 +74,14 @@ class _FlashcardListScreenState extends ConsumerState<FlashcardListScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Today\'s Review',
+                              'Repaso del día',
                               style: theme.textTheme.titleMedium?.copyWith(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             Text(
-                              '$dueCount cards to review',
+                              '$dueCount palabras por repasar',
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 color: Colors.white.withValues(alpha: 0.9),
                               ),
@@ -104,7 +106,7 @@ class _FlashcardListScreenState extends ConsumerState<FlashcardListScreen> {
               future: _loadFlashcards(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(child: NbLoadingBlock());
                 }
 
                 final cards = snapshot.data ?? [];
@@ -125,57 +127,60 @@ class _FlashcardListScreenState extends ConsumerState<FlashcardListScreen> {
                   itemCount: cards.length,
                   itemBuilder: (context, index) {
                     final word = cards[index];
-                    return Dismissible(
-                      key: ValueKey(word.enLabel),
-                      direction: DismissDirection.endToStart,
-                      background: Container(
-                        alignment: Alignment.centerRight,
-                        padding: const EdgeInsets.only(right: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child:
-                            const Icon(Icons.delete, color: Colors.white),
-                      ),
-                      confirmDismiss: (_) async {
-                        return await showDialog<bool>(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text('Remove favorite?'),
-                            content: Text(
-                              'Remove "${word.enLabel}" from your favorites?',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () =>
-                                    Navigator.of(context).pop(false),
-                                child: const Text('Cancel'),
-                              ),
-                              TextButton(
-                                onPressed: () =>
-                                    Navigator.of(context).pop(true),
-                                child: const Text('Remove'),
-                              ),
-                            ],
+                    return NbPopIn(
+                      delay: Duration(milliseconds: index * 60),
+                      child: Dismissible(
+                        key: ValueKey(word.enLabel),
+                        direction: DismissDirection.endToStart,
+                        background: Container(
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.only(right: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(NbRadius.xs),
                           ),
-                        );
-                      },
-                      onDismissed: (_) async {
-                        await _removeFlashcard(word.enLabel);
-                        if (mounted) {
-                          ScaffoldMessenger.of(this.context).showSnackBar(
-                            SnackBar(
-                                content:
-                                    Text('Removed "${word.enLabel}"')),
+                          child:
+                              const Icon(Icons.delete, color: Colors.white),
+                        ),
+                        confirmDismiss: (_) async {
+                          return await showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('¿Eliminar favorito?'),
+                              content: Text(
+                                '¿Quieres eliminar "${word.enLabel}" de tus favoritos?',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(false),
+                                  child: const Text('Cancelar'),
+                                ),
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(true),
+                                  child: const Text('Eliminar'),
+                                ),
+                              ],
+                            ),
                           );
-                        }
-                      },
-                      child: _FlashcardGridItem(
-                        word: word,
-                        onTap: () {
-                          context.push('/review?index=$index');
                         },
+                        onDismissed: (_) async {
+                          await _removeFlashcard(word.enLabel);
+                          if (mounted) {
+                            ScaffoldMessenger.of(this.context).showSnackBar(
+                              SnackBar(
+                                  content:
+                                      Text('"${word.enLabel}" eliminado')),
+                            );
+                          }
+                        },
+                        child: _FlashcardGridItem(
+                          word: word,
+                          onTap: () {
+                            context.push('/review?index=$index');
+                          },
+                        ),
                       ),
                     );
                   },

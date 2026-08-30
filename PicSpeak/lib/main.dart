@@ -24,6 +24,10 @@ import 'features/notifications/data/notification_repository_impl.dart';
 import 'features/notifications/data/usage_time_tracker.dart';
 import 'features/onboarding/data/onboarding_repository_impl.dart';
 import 'features/onboarding/data/onboarding_providers.dart';
+import 'features/premium/data/premium_providers.dart';
+import 'features/premium/data/revenuecat_repository.dart';
+import 'features/premium/data/admob_service.dart';
+import 'features/premium/data/scan_limit_repository_impl.dart';
 import 'features/word_history/data/history_providers.dart';
 import 'features/word_history/data/history_repository_impl.dart';
 
@@ -54,6 +58,7 @@ void main() async {
   final settingsRepo = SettingsRepositoryImpl(prefs);
   final flashcardRepo = FlashcardRepositoryImpl(prefs);
   final historyRepo = HistoryRepositoryImpl(prefs);
+  final scanLimitRepo = ScanLimitRepositoryImpl(prefs);
 
   // Notification infrastructure (non-fatal on failure)
   bool launchedFromNotification = false;
@@ -75,6 +80,24 @@ void main() async {
     await usageTimeTracker.recordOpen();
   } catch (e) {
     debugPrint('Usage time tracker recordOpen failed: $e');
+  }
+
+  // RevenueCat initialization (non-fatal on failure)
+  final revenueCatRepo = RevenueCatRepository();
+  try {
+    await revenueCatRepo.init();
+  } catch (e) {
+    debugPrint('RevenueCat initialization skipped: $e');
+  }
+
+  // AdMob initialization (non-fatal on failure)
+  final adMobService = AdMobService();
+  try {
+    await adMobService.init();
+    // Preload a rewarded ad so it's ready when the user hits the limit
+    adMobService.preloadRewardedAd();
+  } catch (e) {
+    debugPrint('AdMob initialization skipped: $e');
   }
 
   // Notification infrastructure init (non-fatal on failure)
@@ -117,6 +140,9 @@ void main() async {
         flashcardRepositoryProvider.overrideWithValue(flashcardRepo),
         historyRepositoryProvider.overrideWithValue(historyRepo),
         notificationRepositoryProvider.overrideWithValue(notificationRepo),
+        scanLimitRepositoryProvider.overrideWithValue(scanLimitRepo),
+        revenueCatRepositoryProvider.overrideWithValue(revenueCatRepo),
+        adMobServiceProvider.overrideWithValue(adMobService),
       ],
       child: PicSpeakApp(launchedFromNotification: launchedFromNotification),
     ),

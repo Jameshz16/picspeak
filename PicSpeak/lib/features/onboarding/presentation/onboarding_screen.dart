@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../../../app/nb_animations.dart';
+import '../../../app/theme.dart';
 import '../../../core/services/permission_service.dart';
 import '../data/onboarding_providers.dart';
 
@@ -17,30 +19,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
   bool _isRequestingPermission = false;
-
-  final List<_OnboardingPageData> _pages = const [
-    _OnboardingPageData(
-      title: '¡Bienvenido a PicSpeak!',
-      description:
-          'Apunta la cámara a cualquier objeto y descubre su nombre en inglés y español',
-      icon: Icons.camera_alt,
-      color: Color(0xFFFF8C42),
-    ),
-    _OnboardingPageData(
-      title: '¿Cómo funciona?',
-      description:
-          '1) Toma foto → 2) Ve el nombre en ambos idiomas → 3) Escucha la pronunciación → 4) Guarda tus favoritos como flashcards',
-      icon: Icons.lightbulb,
-      color: Color(0xFF4ECDC4),
-    ),
-    _OnboardingPageData(
-      title: '¡Empecemos!',
-      description:
-          'Necesitamos acceso a tu cámara para identificar objetos',
-      icon: Icons.camera_enhance,
-      color: Color(0xFF9B59B6),
-    ),
-  ];
 
   @override
   void dispose() {
@@ -94,12 +72,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('Cancelar'),
           ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              openAppSettings();
-            },
-            child: const Text('Abrir configuración'),
+          NbPressable(
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                openAppSettings();
+              },
+              child: const Text('Abrir configuración'),
+            ),
           ),
         ],
       ),
@@ -107,9 +87,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   void _onNext() {
-    if (_currentPage < _pages.length - 1) {
+    if (_currentPage < 2) {
       _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
       );
     } else {
@@ -129,18 +109,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         child: Column(
           children: [
             Expanded(
-              child: PageView.builder(
+              child: PageView(
                 controller: _pageController,
                 onPageChanged: _onPageChanged,
-                itemCount: _pages.length,
-                itemBuilder: (context, index) {
-                  return _OnboardingPage(
-                    data: _pages[index],
-                    isLastPage: index == _pages.length - 1,
-                    onRequestPermission: _requestCameraPermission,
-                    isRequestingPermission: _isRequestingPermission,
-                  );
-                },
+                children: const [
+                  _StoryPage1(),
+                  _StoryPage2(),
+                  _StoryPage3(),
+                ],
               ),
             ),
             Padding(
@@ -148,52 +124,56 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // Dot indicators
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
-                      _pages.length,
+                      3,
                       (index) => _DotIndicator(
                         isActive: index == _currentPage,
-                        activeColor: _pages[_currentPage].color,
+                        activeColor: _pageColors[_currentPage],
                       ),
                     ),
                   ),
                   const SizedBox(height: 24),
+                  // Main button
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed:
-                          _isRequestingPermission ? null : _onNext,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _pages[_currentPage].color,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                    child: NbPressable(
+                      child: ElevatedButton(
+                        onPressed:
+                            _isRequestingPermission ? null : _onNext,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _pageColors[_currentPage],
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(NbRadius.xs),
+                          ),
                         ),
+                        child: _isRequestingPermission
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Text(
+                                _currentPage == 2
+                                    ? 'Abrir mis ojos'
+                                    : 'Siguiente',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                       ),
-                      child: _isRequestingPermission
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : Text(
-                              _currentPage == _pages.length - 1
-                                  ? 'Permitir cámara'
-                                  : 'Siguiente',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
                     ),
                   ),
                   const SizedBox(height: 12),
-                  if (_currentPage < _pages.length - 1)
+                  if (_currentPage < 2)
                     TextButton(
                       onPressed: _onSkip,
                       child: const Text(
@@ -213,32 +193,48 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 }
 
-class _OnboardingPageData {
-  final String title;
-  final String description;
-  final IconData icon;
-  final Color color;
+const _pageColors = [
+  NbColors.primary,
+  Color(0xFF4ECDC4),
+  Color(0xFF9B59B6),
+];
 
-  const _OnboardingPageData({
-    required this.title,
-    required this.description,
-    required this.icon,
-    required this.color,
-  });
+// ─── Story Page 1: The Vision ──────────────────────────────────────
+
+class _StoryPage1 extends StatefulWidget {
+  const _StoryPage1();
+
+  @override
+  State<_StoryPage1> createState() => _StoryPage1State();
 }
 
-class _OnboardingPage extends StatelessWidget {
-  final _OnboardingPageData data;
-  final bool isLastPage;
-  final VoidCallback onRequestPermission;
-  final bool isRequestingPermission;
+class _StoryPage1State extends State<_StoryPage1>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _eyeController;
+  late final Animation<double> _eyeOpen;
 
-  const _OnboardingPage({
-    required this.data,
-    required this.isLastPage,
-    required this.onRequestPermission,
-    required this.isRequestingPermission,
-  });
+  @override
+  void initState() {
+    super.initState();
+    _eyeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+    _eyeOpen = CurvedAnimation(
+      parent: _eyeController,
+      curve: Curves.easeOutBack,
+    );
+    // Start the eye-opening animation after a short delay
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) _eyeController.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _eyeController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -247,66 +243,62 @@ class _OnboardingPage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            width: 140,
-            height: 140,
-            decoration: BoxDecoration(
-              color: data.color.withValues(alpha: 0.15),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              data.icon,
-              size: 72,
-              color: data.color,
-            ),
+          // Eye opening animation
+          AnimatedBuilder(
+            animation: _eyeOpen,
+            builder: (context, child) {
+              final open = _eyeOpen.value;
+              return Container(
+                width: 140,
+                height: 140,
+                decoration: BoxDecoration(
+                  color: NbColors.primary.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: CustomPaint(
+                  painter: _EyePainter(open: open),
+                ),
+              );
+            },
           ),
           const SizedBox(height: 40),
-          Text(
-            data.title,
-            style: const TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
+          // Title with fade-in
+          NbPopIn(
+            delay: const Duration(milliseconds: 600),
+            child: const Text(
+              'Imagina esto...',
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: NbColors.primary,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 20),
-          Text(
-            data.description,
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.grey.shade700,
-              height: 1.5,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          if (isLastPage) ...[
-            const SizedBox(height: 32),
-            _buildPermissionExplanation(),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPermissionExplanation() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.amber.shade50,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.amber.shade200),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.info_outline, color: Colors.amber.shade800),
-          const SizedBox(width: 12),
-          Expanded(
+          NbPopIn(
+            delay: const Duration(milliseconds: 900),
             child: Text(
-              'Usamos la cámara solo para identificar objetos. No guardamos fotos sin tu permiso.',
+              'Apuntas tu cámara a cualquier objeto y al instante sabes cómo se dice en inglés.',
               style: TextStyle(
-                fontSize: 14,
-                color: Colors.amber.shade900,
+                fontSize: 18,
+                color: Colors.grey.shade700,
+                height: 1.5,
               ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 12),
+          NbPopIn(
+            delay: const Duration(milliseconds: 1200),
+            child: Text(
+              'Cada objeto es una palabra que conquistas.',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey.shade500,
+                fontStyle: FontStyle.italic,
+              ),
+              textAlign: TextAlign.center,
             ),
           ),
         ],
@@ -314,6 +306,319 @@ class _OnboardingPage extends StatelessWidget {
     );
   }
 }
+
+// ─── Story Page 2: The Discovery ───────────────────────────────────
+
+class _StoryPage2 extends StatefulWidget {
+  const _StoryPage2();
+
+  @override
+  State<_StoryPage2> createState() => _StoryPage2State();
+}
+
+class _StoryPage2State extends State<_StoryPage2>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _revealController;
+  late final Animation<double> _blur;
+
+  @override
+  void initState() {
+    super.initState();
+    _revealController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+    _blur = CurvedAnimation(
+      parent: _revealController,
+      curve: Curves.easeOut,
+    );
+    // Start the reveal animation after a delay
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) _revealController.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _revealController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Object silhouette that reveals
+          AnimatedBuilder(
+            animation: _blur,
+            builder: (context, child) {
+              final blurAmount = 10.0 * (1.0 - _blur.value);
+              return Container(
+                width: 160,
+                height: 160,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4ECDC4).withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: ClipOval(
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // The "mystery" object icon
+                      Icon(
+                        Icons.question_mark_rounded,
+                        size: 80,
+                        color: const Color(0xFF4ECDC4).withValues(
+                          alpha: 0.3 + (0.7 * _blur.value),
+                        ),
+                      ),
+                      // Blur overlay that fades out
+                      if (blurAmount > 0.5)
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(
+                              alpha: 0.8 * (1.0 - _blur.value),
+                            ),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 40),
+          NbPopIn(
+            delay: const Duration(milliseconds: 400),
+            child: const Text(
+              'Tu primer objeto te espera',
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF4ECDC4),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 20),
+          NbPopIn(
+            delay: const Duration(milliseconds: 700),
+            child: Text(
+              'Mira a tu alrededor. Esa taza, esa silla, ese árbol fuera de la ventana...',
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.grey.shade700,
+                height: 1.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 12),
+          NbPopIn(
+            delay: const Duration(milliseconds: 1000),
+            child: Text(
+              'Cada uno tiene un nombre en inglés esperándote.',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey.shade500,
+                fontStyle: FontStyle.italic,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Story Page 3: The Call to Action ──────────────────────────────
+
+class _StoryPage3 extends StatefulWidget {
+  const _StoryPage3();
+
+  @override
+  State<_StoryPage3> createState() => _StoryPage3State();
+}
+
+class _StoryPage3State extends State<_StoryPage3>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulseController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Camera icon with pulse
+          AnimatedBuilder(
+            animation: _pulseController,
+            builder: (context, child) {
+              final scale = 1.0 + (0.05 * _pulseController.value);
+              return Transform.scale(
+                scale: scale,
+                child: Container(
+                  width: 140,
+                  height: 140,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF9B59B6).withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.camera_alt,
+                    size: 72,
+                    color: Color(0xFF9B59B6),
+                  ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 40),
+          const Text(
+            '¿Listo para explorar?',
+            style: TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF9B59B6),
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Solo necesitamos acceso a tu cámara para que la magia comience.',
+            style: TextStyle(
+              fontSize: 18,
+              color: Colors.grey.shade700,
+              height: 1.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          // Permission explanation
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.amber.shade50,
+              borderRadius: BorderRadius.circular(NbRadius.xs),
+              border: Border.all(color: Colors.amber.shade200),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, color: Colors.amber.shade800),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Usamos la cámara solo para identificar objetos. No guardamos fotos sin tu permiso.',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.amber.shade900,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Eye Painter ───────────────────────────────────────────────────
+
+class _EyePainter extends CustomPainter {
+  final double open;
+
+  _EyePainter({required this.open});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2 - 16;
+
+    // Eye outline (almond shape)
+    final eyePath = Path()
+      ..moveTo(center.dx - radius, center.dy)
+      ..quadraticBezierTo(
+        center.dx,
+        center.dy - radius * open,
+        center.dx + radius,
+        center.dy,
+      )
+      ..quadraticBezierTo(
+        center.dx,
+        center.dy + radius * open,
+        center.dx - radius,
+        center.dy,
+      );
+
+    // Draw eye white
+    final eyePaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    canvas.drawPath(eyePath, eyePaint);
+
+    // Draw eye outline
+    final outlinePaint = Paint()
+      ..color = NbColors.primary
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3;
+    canvas.drawPath(eyePath, outlinePaint);
+
+    // Draw iris
+    final irisRadius = radius * 0.45 * open;
+    if (irisRadius > 2) {
+      final irisPaint = Paint()
+        ..color = NbColors.primary
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(center, irisRadius, irisPaint);
+
+      // Draw pupil
+      final pupilRadius = irisRadius * 0.5;
+      final pupilPaint = Paint()
+        ..color = Colors.black
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(center, pupilRadius, pupilPaint);
+
+      // Draw highlight
+      final highlightRadius = pupilRadius * 0.3;
+      final highlightPaint = Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(
+        Offset(center.dx - pupilRadius * 0.4, center.dy - pupilRadius * 0.4),
+        highlightRadius,
+        highlightPaint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_EyePainter oldDelegate) => oldDelegate.open != open;
+}
+
+// ─── Dot Indicator ─────────────────────────────────────────────────
 
 class _DotIndicator extends StatelessWidget {
   final bool isActive;
