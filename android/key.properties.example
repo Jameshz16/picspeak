@@ -1,0 +1,8 @@
+# Release signing configuration for PicSpeak
+# IMPORTANT: Do NOT commit this file to version control!
+# Add android/key.properties to .gitignore
+
+storePassword=YOUR_STORE_PASSWORD_HERE
+keyPassword=YOUR_KEY_PASSWORD_HERE
+keyAlias=picspeak
+storeFile=C:/Users/JAMES/picspeak-release.jks
