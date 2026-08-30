@@ -46,6 +46,9 @@ dependencies:
   # TTS
   flutter_tts: ^4.2.5
 
+  # Speech recognition (active pronunciation practice)
+  speech_to_text: ^7.4.0
+
   # State management and routing
   flutter_riverpod: ^2.6.1
   go_router: ^14.6.2
