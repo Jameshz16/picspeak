@@ -9,8 +9,10 @@ import '../../../core/services/tts_service.dart';
 import '../../flashcard_review/data/flashcard_providers.dart';
 import '../../word_history/data/history_providers.dart';
 import '../domain/labeled_object.dart';
+import '../domain/pronunciation_judge.dart';
 import '../domain/recognized_word.dart';
 import 'object_overlay.dart';
+import 'pronunciation_notifier.dart';
 import 'scan_animations.dart';
 import 'tts_play_notifier.dart';
 
@@ -44,6 +46,9 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
     super.initState();
     _currentWord = widget.word;
     _checkTtsAvailability();
+    // Start the pronunciation flow from a clean idle state on every
+    // visit (the provider outlives the screen).
+    ref.read(pronunciationNotifierProvider.notifier).reset();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(historyRepositoryProvider).log(_currentWord);
     });
@@ -112,6 +117,8 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
       _currentWord = newWord;
       _isSaved = false;
     });
+    // The pronunciation target changed — reset any previous feedback.
+    ref.read(pronunciationNotifierProvider.notifier).reset();
     // Log to history
     ref.read(historyRepositoryProvider).log(newWord);
   }
@@ -288,6 +295,10 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                 ),
               ],
             ),
+            const SizedBox(height: 12),
+
+            // Active pronunciation practice
+            _PronunciationButton(expected: _currentWord.enLabel),
             const SizedBox(height: 24),
 
             // Favorite button
@@ -420,5 +431,109 @@ class _TtsButton extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// Full-width Neo-Brutalism button that drives the active pronunciation
+/// practice flow: tap to listen, then shows success/failure feedback.
+class _PronunciationButton extends ConsumerWidget {
+  /// The target word the user has to pronounce (English label).
+  final String expected;
+
+  const _PronunciationButton({required this.expected});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(pronunciationNotifierProvider);
+    final isBusy = state.phase == PronunciationPhase.listening ||
+        state.phase == PronunciationPhase.judging;
+
+    final (label, icon, backgroundColor) = switch (state.phase) {
+      PronunciationPhase.idle => (
+          'Prueba tu pronunciación',
+          Icons.mic,
+          null,
+        ),
+      PronunciationPhase.listening => (
+          'Escuchando...',
+          null,
+          null,
+        ),
+      PronunciationPhase.judging => (
+          'Evaluando...',
+          null,
+          null,
+        ),
+      PronunciationPhase.success => (
+          switch (state.verdict) {
+            PronunciationVerdict.excellent => '¡Muy bien!',
+            PronunciationVerdict.good => '¡Bien!',
+            _ => 'Mejorable',
+          },
+          Icons.check_circle,
+          Colors.green.shade600,
+        ),
+      PronunciationPhase.failure => (
+          'Intenta de nuevo',
+          Icons.mic,
+          NbColors.error,
+        ),
+    };
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        NbPressable(
+          child: ElevatedButton.icon(
+            onPressed: isBusy
+                ? null
+                : () {
+                    final notifier =
+                        ref.read(pronunciationNotifierProvider.notifier);
+                    if (state.phase == PronunciationPhase.idle) {
+                      notifier.start(expected: expected);
+                    } else {
+                      notifier.retry(expected: expected);
+                    }
+                  },
+            icon: isBusy
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Icon(icon),
+            label: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(label),
+            ),
+            style: backgroundColor != null
+                ? ElevatedButton.styleFrom(backgroundColor: backgroundColor)
+                : null,
+          ),
+        ),
+        if (state.phase == PronunciationPhase.failure) ...[
+          const SizedBox(height: 8),
+          Text(
+            _failureMessage(state),
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: NbColors.error,
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  /// Brief user-facing reason for the failure phase.
+  String _failureMessage(PronunciationState state) {
+    final error = state.error;
+    if (error != null) return error;
+    final recognized = (state.recognizedText ?? '').trim();
+    return recognized.length >= 2
+        ? 'No era la palabra esperada.'
+        : 'No te escuché con claridad.';
   }
 }

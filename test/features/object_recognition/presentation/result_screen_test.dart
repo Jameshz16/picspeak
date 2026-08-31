@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:picspeak/core/services/speech_recognition_service.dart';
 import 'package:picspeak/core/services/tts_service.dart';
 import 'package:picspeak/features/flashcard_review/data/flashcard_providers.dart';
 import 'package:picspeak/features/flashcard_review/domain/flashcard_repository.dart';
+import 'package:picspeak/features/object_recognition/domain/pronunciation_judge.dart';
 import 'package:picspeak/features/object_recognition/domain/recognized_word.dart';
+import 'package:picspeak/features/object_recognition/presentation/pronunciation_notifier.dart';
 import 'package:picspeak/features/object_recognition/presentation/result_screen.dart';
 import 'package:picspeak/features/object_recognition/presentation/tts_play_notifier.dart';
 import 'package:picspeak/features/word_history/data/history_providers.dart';
@@ -29,6 +32,31 @@ class _MockTtsService implements TtsService {
 
   @override
   Future<void> stop() async {}
+}
+
+class _MockSpeechRecognitionService implements SpeechRecognitionService {
+  @override
+  bool isListening = false;
+
+  @override
+  Future<bool> initialize() async => true;
+
+  @override
+  Future<void> listen({
+    required void Function(String recognizedText, double? confidence) onResult,
+    required void Function() onDone,
+    required void Function(String error) onError,
+  }) async {
+    isListening = true;
+  }
+
+  @override
+  Future<void> stop() async {
+    isListening = false;
+  }
+
+  @override
+  bool get isAvailable => true;
 }
 
 class _MockFlashcardRepository implements FlashcardRepository {
@@ -88,6 +116,7 @@ void main() {
   group('ResultScreen', () {
     late RecognizedWord testWord;
     late _MockTtsService mockTts;
+    late _MockSpeechRecognitionService mockSpeech;
     late _MockFlashcardRepository mockFlashcardRepo;
     late _MockHistoryRepository mockHistoryRepo;
     late GoRouter router;
@@ -101,6 +130,7 @@ void main() {
         timestamp: DateTime(2024, 1, 1),
       );
       mockTts = _MockTtsService();
+      mockSpeech = _MockSpeechRecognitionService();
       mockFlashcardRepo = _MockFlashcardRepository();
       mockHistoryRepo = _MockHistoryRepository();
     });
@@ -135,10 +165,14 @@ void main() {
       return ProviderScope(
         overrides: [
           ttsServiceProvider.overrideWithValue(mockTts),
+          speechRecognitionServiceProvider.overrideWithValue(mockSpeech),
           flashcardRepositoryProvider.overrideWithValue(mockFlashcardRepo),
           historyRepositoryProvider.overrideWithValue(mockHistoryRepo),
           ttsPlayNotifierProvider.overrideWith((ref) {
             return TtsPlayNotifier(mockTts);
+          }),
+          pronunciationNotifierProvider.overrideWith((ref) {
+            return PronunciationNotifier(mockSpeech, const PronunciationJudge());
           }),
         ],
         child: MaterialApp.router(
@@ -147,44 +181,76 @@ void main() {
       );
     }
 
+    /// Navigates to the result screen and pumps through the finite
+    /// animations (route transition, typewriter, fade-in). pumpAndSettle
+    /// cannot be used here because ScanLineOverlay and FloatingLabel run
+    /// infinite repeating animations.
+    Future<void> pumpResultScreen(WidgetTester tester) async {
+      router.go('/result', extra: {'word': testWord});
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 200));
+      await tester.pump(const Duration(milliseconds: 250));
+    }
+
     testWidgets('renders bilingual card with EN and ES labels',
         (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget());
-      router.go('/result', extra: {'word': testWord});
-      await tester.pumpAndSettle();
+      await pumpResultScreen(tester);
 
       expect(find.text('dog'), findsOneWidget);
       expect(find.text('perro'), findsOneWidget);
-      expect(find.textContaining('95.0%'), findsOneWidget);
+      expect(find.textContaining('95%'), findsOneWidget);
     });
 
     testWidgets('favorite button toggles and shows saved state',
         (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget());
-      router.go('/result', extra: {'word': testWord});
-      await tester.pumpAndSettle();
+      await pumpResultScreen(tester);
 
-      expect(find.text('Add to favorites'), findsOneWidget);
+      expect(find.text('Guardar como favorito'), findsOneWidget);
 
-      await tester.ensureVisible(find.text('Add to favorites'));
-      await tester.tap(find.text('Add to favorites'));
-      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Guardar como favorito'));
+      await tester.tap(find.text('Guardar como favorito'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.text('Saved to favorites'), findsOneWidget);
+      expect(find.text('Guardado'), findsOneWidget);
+
+      // Let the snackbar timer expire so no timer is pending at teardown.
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pump(const Duration(milliseconds: 300));
     });
 
     testWidgets('TTS buttons trigger speak with correct locale',
         (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget());
-      router.go('/result', extra: {'word': testWord});
-      await tester.pumpAndSettle();
+      await pumpResultScreen(tester);
 
       await tester.ensureVisible(find.text('Escuchar en inglés'));
       await tester.tap(find.text('Escuchar en inglés'));
-      await tester.pumpAndSettle();
+      // TtsPlayNotifier defers state reset by 500ms; flush it.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 600));
 
       expect(mockTts.lastSpokenText, equals('dog'));
       expect(mockTts.lastLocale, equals('en-US'));
+    });
+
+    testWidgets('pronunciation button starts listening on tap',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await pumpResultScreen(tester);
+
+      expect(find.text('Prueba tu pronunciación'), findsOneWidget);
+
+      await tester.ensureVisible(find.text('Prueba tu pronunciación'));
+      await tester.tap(find.text('Prueba tu pronunciación'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.text('Escuchando...'), findsOneWidget);
+      expect(mockSpeech.isListening, isTrue);
     });
   });
 }
