@@ -450,7 +450,7 @@ class _PronunciationButton extends ConsumerWidget {
 
     final (label, icon, backgroundColor) = switch (state.phase) {
       PronunciationPhase.idle => (
-          'Probá tu pronunciación',
+          'Prueba tu pronunciación',
           Icons.mic,
           null,
         ),
@@ -474,7 +474,7 @@ class _PronunciationButton extends ConsumerWidget {
           Colors.green.shade600,
         ),
       PronunciationPhase.failure => (
-          'Intentá de nuevo',
+          'Intenta de nuevo',
           Icons.mic,
           NbColors.error,
         ),

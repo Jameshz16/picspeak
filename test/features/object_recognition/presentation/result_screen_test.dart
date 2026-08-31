@@ -242,10 +242,10 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await pumpResultScreen(tester);
 
-      expect(find.text('Probá tu pronunciación'), findsOneWidget);
+      expect(find.text('Prueba tu pronunciación'), findsOneWidget);
 
-      await tester.ensureVisible(find.text('Probá tu pronunciación'));
-      await tester.tap(find.text('Probá tu pronunciación'));
+      await tester.ensureVisible(find.text('Prueba tu pronunciación'));
+      await tester.tap(find.text('Prueba tu pronunciación'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
