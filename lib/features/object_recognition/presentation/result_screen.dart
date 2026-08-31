@@ -12,6 +12,7 @@ import '../domain/labeled_object.dart';
 import '../domain/pronunciation_judge.dart';
 import '../domain/recognized_word.dart';
 import 'object_overlay.dart';
+import 'phrases_section.dart';
 import 'pronunciation_notifier.dart';
 import 'scan_animations.dart';
 import 'tts_play_notifier.dart';
@@ -300,6 +301,13 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
             // Active pronunciation practice
             _PronunciationButton(expected: _currentWord.enLabel),
             const SizedBox(height: 24),
+
+            // Phrases in context
+            PhrasesSection(
+              enLabel: _currentWord.enLabel,
+              esLabel: _currentWord.esLabel,
+            ),
+            const SizedBox(height: 16),
 
             // Favorite button
             NbPressable(

@@ -1,0 +1,286 @@
+{
+  "Cat": {
+    "en": ["The cat is sleeping on the sofa.", "I have a black cat."],
+    "es": ["El gato está durmiendo en el sofá.", "Tengo un gato negro."]
+  },
+  "Dog": {
+    "en": ["The dog is playing in the park.", "She walks her dog every morning."],
+    "es": ["El perro está jugando en el parque.", "Ella pasea a su perro cada mañana."]
+  },
+  "Bird": {
+    "en": ["The bird is singing in the tree.", "I see a beautiful bird outside."],
+    "es": ["El pájaro está cantando en el árbol.", "Veo un pájaro hermoso afuera."]
+  },
+  "Fish": {
+    "en": ["The fish is swimming in the tank.", "We eat fish for dinner."],
+    "es": ["El pez está nadando en el acuario.", "Comemos pescado en la cena."]
+  },
+  "Horse": {
+    "en": ["The horse runs very fast.", "She rides a horse on the farm."],
+    "es": ["El caballo corre muy rápido.", "Ella monta a caballo en la granja."]
+  },
+  "Elephant": {
+    "en": ["The elephant is very big.", "Elephants live in Africa and Asia."],
+    "es": ["El elefante es muy grande.", "Los elefantes viven en África y Asia."]
+  },
+  "Lion": {
+    "en": ["The lion is the king of the jungle.", "I saw a lion at the zoo."],
+    "es": ["El león es el rey de la selva.", "Vi un león en el zoológico."]
+  },
+  "Rabbit": {
+    "en": ["The rabbit eats a carrot.", "My sister has a white rabbit."],
+    "es": ["El conejo come una zanahoria.", "Mi hermana tiene un conejo blanco."]
+  },
+  "Monkey": {
+    "en": ["The monkey is climbing the tree.", "Monkeys like to eat bananas."],
+    "es": ["El mono está trepando el árbol.", "A los monos les gusta comer bananas."]
+  },
+  "Turtle": {
+    "en": ["The turtle walks very slowly.", "I have a pet turtle at home."],
+    "es": ["La tortuga camina muy despacio.", "Tengo una tortuga mascota en casa."]
+  },
+  "Apple": {
+    "en": ["I eat an apple every day.", "This apple is very sweet."],
+    "es": ["Yo como una manzana todos los días.", "Esta manzana es muy dulce."]
+  },
+  "Bread": {
+    "en": ["I buy bread at the bakery.", "She makes bread every Sunday."],
+    "es": ["Compro pan en la panadería.", "Ella hace pan todos los domingos."]
+  },
+  "Coffee": {
+    "en": ["I drink coffee every morning.", "Do you want coffee or tea?"],
+    "es": ["Tomo café todas las mañanas.", "¿Quieres café o té?"]
+  },
+  "Pizza": {
+    "en": ["We eat pizza on Fridays.", "I like pizza with cheese."],
+    "es": ["Comemos pizza los viernes.", "Me gusta la pizza con queso."]
+  },
+  "Rice": {
+    "en": ["Rice is a common food in Colombia.", "She cooks rice with chicken."],
+    "es": ["El arroz es una comida común en Colombia.", "Ella cocina arroz con pollo."]
+  },
+  "Milk": {
+    "en": ["I drink milk for breakfast.", "The baby wants milk."],
+    "es": ["Tomo leche en el desayuno.", "El bebé quiere leche."]
+  },
+  "Egg": {
+    "en": ["I eat two eggs every morning.", "Can you boil an egg for me?"],
+    "es": ["Como dos huevos cada mañana.", "¿Puedes hervirme un huevo?"]
+  },
+  "Cheese": {
+    "en": ["I like cheese on my sandwich.", "This cheese is from Colombia."],
+    "es": ["Me gusta el queso en mi sándwich.", "Este queso es de Colombia."]
+  },
+  "Banana": {
+    "en": ["The banana is yellow and sweet.", "Monkeys love to eat bananas."],
+    "es": ["La banana es amarilla y dulce.", "A los monos les encanta comer bananas."]
+  },
+  "Cake": {
+    "en": ["She made a chocolate cake.", "We have cake for my birthday."],
+    "es": ["Ella hizo un pastel de chocolate.", "Tenemos pastel para mi cumpleaños."]
+  },
+  "Chocolate": {
+    "en": ["I love hot chocolate.", "This chocolate is very delicious."],
+    "es": ["Me encanta el chocolate caliente.", "Este chocolate es muy delicioso."]
+  },
+  "Orange": {
+    "en": ["I drink orange juice every day.", "The orange is sweet and juicy."],
+    "es": ["Tomo jugo de naranja todos los días.", "La naranja es dulce y jugosa."]
+  },
+  "Shirt": {
+    "en": ["I wear a blue shirt to work.", "This shirt is very comfortable."],
+    "es": ["Uso una camisa azul para trabajar.", "Esta camisa es muy cómoda."]
+  },
+  "Shoe": {
+    "en": ["I need new shoes for school.", "These shoes are very comfortable."],
+    "es": ["Necesito zapatos nuevos para la escuela.", "Estos zapatos son muy cómodos."]
+  },
+  "Hat": {
+    "en": ["He wears a hat in the sun.", "I bought a new hat yesterday."],
+    "es": ["Él usa un sombrero en el sol.", "Compré un sombrero nuevo ayer."]
+  },
+  "Dress": {
+    "en": ["She wears a beautiful dress.", "The dress is red and white."],
+    "es": ["Ella usa un vestido hermoso.", "El vestido es rojo y blanco."]
+  },
+  "Jacket": {
+    "en": ["Take your jacket, it is cold outside.", "I like my new jacket."],
+    "es": ["Lleva tu chaqueta, hace frío afuera.", "Me gusta mi chaqueta nueva."]
+  },
+  "Bed": {
+    "en": ["I go to bed at ten o'clock.", "The cat is sleeping on my bed."],
+    "es": ["Me acuesto a las diez en punto.", "El gato está durmiendo en mi cama."]
+  },
+  "Chair": {
+    "en": ["Please sit on the chair.", "The chair is next to the table."],
+    "es": ["Por favor siéntate en la silla.", "La silla está al lado de la mesa."]
+  },
+  "Table": {
+    "en": ["The food is on the table.", "We eat dinner at the table."],
+    "es": ["La comida está en la mesa.", "Cenamos en la mesa."]
+  },
+  "Door": {
+    "en": ["Please close the door.", "The door is open."],
+    "es": ["Por favor cierra la puerta.", "La puerta está abierta."]
+  },
+  "Window": {
+    "en": ["Open the window, please.", "I can see the park from the window."],
+    "es": ["Abre la ventana, por favor.", "Puedo ver el parque desde la ventana."]
+  },
+  "Lamp": {
+    "en": ["Turn on the lamp, it is dark.", "The lamp is on the table."],
+    "es": ["Enciende la lámpara, está oscuro.", "La lámpara está sobre la mesa."]
+  },
+  "Mirror": {
+    "en": ["I look at myself in the mirror.", "The mirror is in the bathroom."],
+    "es": ["Me miro en el espejo.", "El espejo está en el baño."]
+  },
+  "Couch": {
+    "en": ["We watch TV on the couch.", "The cat is on the couch."],
+    "es": ["Vemos televisión en el sofá.", "El gato está en el sofá."]
+  },
+  "Car": {
+    "en": ["My father drives a red car.", "The car is very fast."],
+    "es": ["Mi padre maneja un auto rojo.", "El auto es muy rápido."]
+  },
+  "Bicycle": {
+    "en": ["I ride my bicycle to school.", "She has a new bicycle."],
+    "es": ["Voy en bicicleta a la escuela.", "Ella tiene una bicicleta nueva."]
+  },
+  "Airplane": {
+    "en": ["The airplane flies very high.", "We travel by airplane to Bogotá."],
+    "es": ["El avión vuela muy alto.", "Viajamos en avión a Bogotá."]
+  },
+  "Bus": {
+    "en": ["I take the bus to work.", "The bus arrives at eight."],
+    "es": ["Tomo el autobús para ir a trabajar.", "El autobús llega a las ocho."]
+  },
+  "Train": {
+    "en": ["The train is very fast.", "We take the train to the city."],
+    "es": ["El tren es muy rápido.", "Tomamos el tren para ir a la ciudad."]
+  },
+  "Boat": {
+    "en": ["The boat is on the lake.", "We go fishing in a small boat."],
+    "es": ["El bote está en el lago.", "Vamos a pescar en un bote pequeño."]
+  },
+  "Sun": {
+    "en": ["The sun is very bright today.", "I like to watch the sunset."],
+    "es": ["El sol está muy brillante hoy.", "Me gusta ver el atardecer."]
+  },
+  "Moon": {
+    "en": ["The moon is beautiful tonight.", "I can see the moon from my window."],
+    "es": ["La luna está hermosa esta noche.", "Puedo ver la luna desde mi ventana."]
+  },
+  "Tree": {
+    "en": ["The tree has many green leaves.", "There is a big tree in the park."],
+    "es": ["El árbol tiene muchas hojas verdes.", "Hay un árbol grande en el parque."]
+  },
+  "Flower": {
+    "en": ["She gives me a red flower.", "The flowers are very beautiful."],
+    "es": ["Ella me da una flor roja.", "Las flores son muy hermosas."]
+  },
+  "Mountain": {
+    "en": ["The mountain is very tall.", "We hike in the mountains on weekends."],
+    "es": ["La montaña es muy alta.", "Caminamos en las montañas los fines de semana."]
+  },
+  "Ocean": {
+    "en": ["The ocean is deep and blue.", "I love to swim in the ocean."],
+    "es": ["El océano es profundo y azul.", "Me encanta nadar en el océano."]
+  },
+  "Rain": {
+    "en": ["It rains a lot in April.", "Take an umbrella, it is going to rain."],
+    "es": ["Llueve mucho en abril.", "Lleva un paraguas, va a llover."]
+  },
+  "Star": {
+    "en": ["I can see the stars at night.", "She is a movie star."],
+    "es": ["Puedo ver las estrellas en la noche.", "Ella es una estrella de cine."]
+  },
+  "Water": {
+    "en": ["I drink water every day.", "The water in the lake is cold."],
+    "es": ["Tomo agua todos los días.", "El agua del lago está fría."]
+  },
+  "Phone": {
+    "en": ["I use my phone every day.", "Can I use your phone?"],
+    "es": ["Uso mi teléfono todos los días.", "¿Puedo usar tu teléfono?"]
+  },
+  "Computer": {
+    "en": ["I work on my computer.", "The computer is on the desk."],
+    "es": ["Trabajo en mi computadora.", "La computadora está en el escritorio."]
+  },
+  "Camera": {
+    "en": ["She takes photos with her camera.", "I want a new camera."],
+    "es": ["Ella toma fotos con su cámara.", "Quiero una cámara nueva."]
+  },
+  "Laptop": {
+    "en": ["I carry my laptop to school.", "The laptop is very light."],
+    "es": ["Llevo mi portátil a la escuela.", "El portátil es muy liviano."]
+  },
+  "Hand": {
+    "en": ["Wash your hands before eating.", "She holds my hand."],
+    "es": ["Lávate las manos antes de comer.", "Ella me toma de la mano."]
+  },
+  "Eye": {
+    "en": ["She has beautiful blue eyes.", "Close your eyes and count to ten."],
+    "es": ["Ella tiene ojos azules hermosos.", "Cierra los ojos y cuenta hasta diez."]
+  },
+  "Head": {
+    "en": ["I have a headache.", "He nods his head to say yes."],
+    "es": ["Me duele la cabeza.", "Él asiente con la cabeza para decir sí."]
+  },
+  "Heart": {
+    "en": ["My heart beats very fast.", "She has a big heart."],
+    "es": ["Mi corazón late muy rápido.", "Ella tiene un gran corazón."]
+  },
+  "Guitar": {
+    "en": ["He plays the guitar very well.", "I want to learn to play guitar."],
+    "es": ["Él toca la guitarra muy bien.", "Quiero aprender a tocar la guitarra."]
+  },
+  "Piano": {
+    "en": ["She plays the piano every day.", "The piano is in the living room."],
+    "es": ["Ella toca el piano todos los días.", "El piano está en la sala."]
+  },
+  "House": {
+    "en": ["My house is near the school.", "The house has three rooms."],
+    "es": ["Mi casa está cerca de la escuela.", "La casa tiene tres habitaciones."]
+  },
+  "School": {
+    "en": ["I go to school every day.", "The school is very big."],
+    "es": ["Voy a la escuela todos los días.", "La escuela es muy grande."]
+  },
+  "Hospital": {
+    "en": ["My mother works at the hospital.", "The hospital is on the main street."],
+    "es": ["Mi madre trabaja en el hospital.", "El hospital está en la calle principal."]
+  },
+  "Restaurant": {
+    "en": ["We eat at a restaurant on Saturdays.", "The restaurant has good food."],
+    "es": ["Comemos en un restaurante los sábados.", "El restaurante tiene buena comida."]
+  },
+  "Knife": {
+    "en": ["Use the knife to cut the bread.", "Be careful with the knife."],
+    "es": ["Usa el cuchillo para cortar el pan.", "Ten cuidado con el cuchillo."]
+  },
+  "Scissors": {
+    "en": ["I need scissors to cut the paper.", "The scissors are on the desk."],
+    "es": ["Necesito tijeras para cortar el papel.", "Las tijeras están en el escritorio."]
+  },
+  "Hammer": {
+    "en": ["He uses a hammer to build the house.", "The hammer is in the toolbox."],
+    "es": ["Él usa un martillo para construir la casa.", "El martillo está en la caja de herramientas."]
+  },
+  "Book": {
+    "en": ["I read a book before bed.", "She has many books in her room."],
+    "es": ["Leo un libro antes de dormir.", "Ella tiene muchos libros en su habitación."]
+  },
+  "Key": {
+    "en": ["I lost my house key.", "The key is on the table."],
+    "es": ["Perdí la llave de mi casa.", "La llave está en la mesa."]
+  },
+  "Umbrella": {
+    "en": ["Take your umbrella, it might rain.", "I forgot my umbrella at home."],
+    "es": ["Lleva tu paraguas, puede llover.", "Olvidé mi paraguas en casa."]
+  },
+  "Bag": {
+    "en": ["My bag is very heavy.", "She puts the books in her bag."],
+    "es": ["Mi bolsa es muy pesada.", "Ella pone los libros en su bolsa."]
+  }
+}

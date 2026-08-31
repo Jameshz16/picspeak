@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:picspeak/core/data/phrase_repository.dart';
 import 'package:picspeak/core/services/speech_recognition_service.dart';
 import 'package:picspeak/core/services/tts_service.dart';
 import 'package:picspeak/features/flashcard_review/data/flashcard_providers.dart';
@@ -112,6 +113,16 @@ class _MockHistoryRepository implements HistoryRepository {
   Future<List<RecognizedWord>> search(String query) async => [];
 }
 
+class _MockPhraseRepository implements PhraseRepository {
+  @override
+  List<PhrasePair>? getPhrases(String enLabel) => [
+        const PhrasePair(
+          en: 'The dog is playing.',
+          es: 'El perro está jugando.',
+        ),
+      ];
+}
+
 void main() {
   group('ResultScreen', () {
     late RecognizedWord testWord;
@@ -174,6 +185,8 @@ void main() {
           pronunciationNotifierProvider.overrideWith((ref) {
             return PronunciationNotifier(mockSpeech, const PronunciationJudge());
           }),
+          phraseRepositoryProvider
+              .overrideWith((ref) async => _MockPhraseRepository()),
         ],
         child: MaterialApp.router(
           routerConfig: router,
