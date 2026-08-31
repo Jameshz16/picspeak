@@ -4,11 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/nb_animations.dart';
 import '../../../app/theme.dart';
 import '../../../core/data/phrase_repository.dart';
+import '../domain/template_phrases.dart';
 import '../presentation/tts_play_notifier.dart';
 
 /// Displays example phrases for a recognized word.
 ///
-/// If no phrases exist for the word, renders nothing ([SizedBox.shrink]).
+/// Curated phrases from the JSON asset are preferred. When none exist,
+/// simple template-based phrases are generated so every word has at
+/// least two example sentences.
 class PhrasesSection extends ConsumerWidget {
   final String enLabel;
   final String esLabel;
@@ -27,10 +30,8 @@ class PhrasesSection extends ConsumerWidget {
       loading: () => const SizedBox.shrink(),
       error: (_, __) => const SizedBox.shrink(),
       data: (repo) {
-        final phrases = repo.getPhrases(enLabel);
-        if (phrases == null || phrases.isEmpty) {
-          return const SizedBox.shrink();
-        }
+        final phrases =
+            repo.getPhrases(enLabel) ?? generateTemplatePhrases(enLabel, esLabel);
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
