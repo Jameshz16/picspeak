@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../app/nb_animations.dart';
+import '../../../app/sb_animations.dart';
 import '../../../app/theme.dart';
 import '../../auth/data/auth_providers.dart';
 import '../../auth/domain/auth_repository.dart';
@@ -24,7 +24,7 @@ class SettingsScreen extends ConsumerWidget {
       ),
       body: settingsAsync.when(
         data: (settings) => _buildSettingsList(context, ref, settings, themeMode),
-        loading: () => const Center(child: NbLoadingBlock()),
+        loading: () => const Center(child: SbLoadingDots()),
         error: (err, _) => Center(child: Text('Error: $err')),
       ),
     );

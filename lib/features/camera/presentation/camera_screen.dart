@@ -4,8 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import '../../../app/nb_animations.dart';
-import '../../../app/theme.dart';
+import '../../../app/sb_animations.dart';
+import '../../../app/sb_colors.dart';
+import '../../../app/sb_radius.dart';
 import '../../../core/data/label_map_repository.dart';
 import '../../../core/services/permission_service.dart';
 import '../../object_recognition/data/object_recognition_providers.dart';
@@ -217,7 +218,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
           Container(
             color: Colors.black54,
             child: const Center(
-              child: NbLoadingBlock(),
+              child: SbLoadingDots(),
             ),
           ),
         // Banner ad at the bottom (hidden for premium users)
@@ -231,12 +232,12 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
           alignment: Alignment.bottomCenter,
           child: Padding(
             padding: const EdgeInsets.only(bottom: 80),
-            child: NbBounce(
-              child: NbPressable(
+            child: SbPulse(
+              child: SbPressable(
                 child: FloatingActionButton.large(
                   onPressed: _isProcessing ? null : _onCapture,
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.black,
+                  backgroundColor: SbColors.activeBlue,
+                  foregroundColor: SbColors.onError,
                   child: const Icon(Icons.camera_alt, size: 40),
                 ),
               ),
@@ -259,7 +260,7 @@ class _LoadingView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const NbLoadingBlock(),
+            const SbLoadingDots(),
             const SizedBox(height: 16),
             Text(
               message,
@@ -295,7 +296,7 @@ class _ErrorView extends StatelessWidget {
             ),
             if (onRetry != null) ...[
               const SizedBox(height: 16),
-              NbPressable(
+              SbPressable(
                 child: ElevatedButton(
                   onPressed: onRetry,
                   child: const Text('Retry'),
@@ -344,7 +345,7 @@ class _PermissionDeniedView extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             if (onRequestPermission != null)
-              NbPressable(
+              SbPressable(
                 child: ElevatedButton(
                   onPressed: onRequestPermission,
                   child: const Text('Dar permiso'),
@@ -379,12 +380,12 @@ class _ScanCounterBadge extends ConsumerWidget {
             const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: Colors.amber.withValues(alpha: 0.9),
-          borderRadius: BorderRadius.circular(NbRadius.xs),
-        ),
-        child: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.workspace_premium,
+            borderRadius: BorderRadius.circular(SbRadius.secondary),
+            ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.workspace_premium,
                 size: 16, color: Colors.black87),
             SizedBox(width: 4),
             Text(
@@ -415,7 +416,7 @@ class _ScanCounterBadge extends ConsumerWidget {
                 horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
               color: color,
-              borderRadius: BorderRadius.circular(NbRadius.xs),
+              borderRadius: BorderRadius.circular(SbRadius.secondary),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -466,7 +467,7 @@ class _WordOfDayBadge extends ConsumerWidget {
               color: isFound 
                   ? Colors.green.withValues(alpha: 0.9)
                   : Colors.white.withValues(alpha: 0.9),
-              borderRadius: BorderRadius.circular(NbRadius.xs),
+              borderRadius: BorderRadius.circular(SbRadius.secondary),
               border: Border.all(
                 color: isFound ? Colors.green.shade700 : Colors.amber.shade700,
                 width: 1.5,
@@ -520,7 +521,7 @@ class _WordOfDayBadge extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(NbRadius.xs),
+          borderRadius: BorderRadius.circular(SbRadius.secondary),
         ),
         title: Row(
           children: [

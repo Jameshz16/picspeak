@@ -1,0 +1,6 @@
+# PicSpeak SDD Configuration
+project: picspeak
+artifact_store: openspec
+delivery_strategy: ask-on-risk
+review_budget: 400
+execution_mode: interactive

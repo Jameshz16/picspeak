@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
-import '../../../app/nb_animations.dart';
-import '../../../app/theme.dart';
+import '../../../app/sb_animations.dart';
+import '../../../app/sb_colors.dart';
+import '../../../app/sb_radius.dart';
 import '../data/premium_providers.dart';
 
 /// Full-screen paywall that promotes PicSpeak Premium.
@@ -129,8 +130,8 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
         title: const Text('PicSpeak Premium'),
         centerTitle: true,
       ),
-      body: _loading
-          ? const Center(child: NbLoadingBlock())
+body: _loading
+          ? const Center(child: SbLoadingDots())
           : SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Column(
@@ -189,7 +190,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.errorContainer,
-                        borderRadius: BorderRadius.circular(NbRadius.xs),
+borderRadius: BorderRadius.circular(SbRadius.secondary),
                       ),
                       child: Text(
                         _error!,
@@ -267,18 +268,18 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
 
       return Padding(
         padding: const EdgeInsets.only(bottom: 12),
-        child: NbPressable(
+child: SbPressable(
           child: Card(
             elevation: isAnnual ? 4 : 1,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(NbRadius.xs),
+              borderRadius: BorderRadius.circular(SbRadius.secondary),
               side: isAnnual
                   ? BorderSide(
-                      color: theme.colorScheme.primary, width: 2)
+                      color: SbColors.accentGoldMedium, width: 2)
                   : BorderSide.none,
             ),
             child: InkWell(
-              borderRadius: BorderRadius.circular(NbRadius.xs),
+              borderRadius: BorderRadius.circular(SbRadius.secondary),
               onTap: _purchasing ? null : () => _purchase(package),
               child: Padding(
                 padding: const EdgeInsets.all(20),
@@ -292,17 +293,16 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                             Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.primaryContainer,
-                                borderRadius: BorderRadius.circular(8),
+decoration: BoxDecoration(
+                                color: SbColors.accentGoldLight,
+                                borderRadius: BorderRadius.circular(SbRadius.secondary),
                               ),
                               child: Text(
                                 'BEST VALUE',
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
-                                  color: theme
-                                      .colorScheme.onPrimaryContainer,
+                                  color: SbColors.accentGoldDark,
                                 ),
                               ),
                             ),
@@ -396,13 +396,13 @@ class _FeatureRow extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(NbRadius.xs),
+decoration: BoxDecoration(
+              color: SbColors.accentGoldLight,
+              borderRadius: BorderRadius.circular(SbRadius.secondary),
             ),
             child: Icon(
               icon,
-              color: theme.colorScheme.onPrimaryContainer,
+              color: SbColors.accentGoldDark,
               size: 24,
             ),
           ),

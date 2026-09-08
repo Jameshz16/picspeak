@@ -4,7 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'app_shell.dart';
-import 'nb_animations.dart';
+import 'sb_animations.dart';
+import '../features/gallery/presentation/gallery_screen.dart';
 import '../features/auth/presentation/auth_gate.dart';
 import '../features/auth/presentation/login_screen.dart';
 import '../features/auth/presentation/register_screen.dart';
@@ -65,12 +66,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/login',
         pageBuilder: (context, state) =>
-            nbHardRouteTransition(const LoginScreen()),
+            sbRouteTransition(const LoginScreen()),
       ),
       GoRoute(
         path: '/register',
         pageBuilder: (context, state) =>
-            nbHardRouteTransition(const RegisterScreen()),
+            sbRouteTransition(const RegisterScreen()),
       ),
 
       // Main app shell
@@ -103,6 +104,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: '/stats',
             builder: (context, state) => const StatsScreen(),
           ),
+          GoRoute(
+            path: '/gallery',
+            builder: (context, state) => const GalleryScreen(),
+          ),
         ],
       ),
 
@@ -117,12 +122,12 @@ final routerProvider = Provider<GoRouter>((ref) {
               .toList();
           final isWordOfDay = extra['isWordOfDay'] as bool? ?? false;
           if (word == null) {
-            return nbHardRouteTransition(const Scaffold(
+            return sbRouteTransition(const Scaffold(
                 body: Center(child: Text('No word data provided.')),
               ),
             );
           }
-          return nbHardRouteTransition(ResultScreen(
+          return sbRouteTransition(ResultScreen(
               word: word,
               allLabels: allLabels ?? [],
               isWordOfDay: isWordOfDay,
@@ -135,31 +140,31 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) {
           final indexStr = state.uri.queryParameters['index'];
           final initialIndex = int.tryParse(indexStr ?? '') ?? 0;
-          return nbHardRouteTransition(FlashcardReviewScreen(initialIndex: initialIndex),
+          return sbRouteTransition(FlashcardReviewScreen(initialIndex: initialIndex),
           );
         },
       ),
       GoRoute(
         path: '/review-today',
-        pageBuilder: (context, state) => nbHardRouteTransition(const ReviewTodayScreen(),
+        pageBuilder: (context, state) => sbRouteTransition(const ReviewTodayScreen(),
         ),
       ),
       GoRoute(
         path: '/category/:id',
         pageBuilder: (context, state) {
           final categoryId = state.pathParameters['id']!;
-          return nbHardRouteTransition(CategoryWordsScreen(categoryId: categoryId),
+          return sbRouteTransition(CategoryWordsScreen(categoryId: categoryId),
           );
         },
       ),
       GoRoute(
         path: '/onboarding',
-        pageBuilder: (context, state) => nbHardRouteTransition(const OnboardingScreen(),
+        pageBuilder: (context, state) => sbRouteTransition(const OnboardingScreen(),
         ),
       ),
       GoRoute(
         path: '/paywall',
-        pageBuilder: (context, state) => nbHardRouteTransition(const PaywallScreen(),
+        pageBuilder: (context, state) => sbRouteTransition(const PaywallScreen(),
         ),
       ),
     ],

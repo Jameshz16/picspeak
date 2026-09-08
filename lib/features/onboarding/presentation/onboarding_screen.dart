@@ -3,8 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import '../../../app/nb_animations.dart';
-import '../../../app/theme.dart';
+import '../../../app/sb_animations.dart';
+import '../../../app/sb_colors.dart';
+import '../../../app/sb_radius.dart';
 import '../../../core/services/permission_service.dart';
 import '../data/onboarding_providers.dart';
 
@@ -72,7 +73,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('Cancelar'),
           ),
-          NbPressable(
+          SbPressable(
             child: ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
@@ -139,16 +140,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   // Main button
                   SizedBox(
                     width: double.infinity,
-                    child: NbPressable(
+                    child: SbPressable(
                       child: ElevatedButton(
                         onPressed:
                             _isRequestingPermission ? null : _onNext,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: _pageColors[_currentPage],
-                          foregroundColor: Colors.white,
+                          backgroundColor: SbColors.accentBlue,
+                          foregroundColor: SbColors.primaryText,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(NbRadius.xs),
+                            borderRadius: BorderRadius.circular(SbRadius.primary),
                           ),
                         ),
                         child: _isRequestingPermission
@@ -157,7 +158,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                                 height: 24,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: Colors.white,
+                                  color: SbColors.primaryText,
                                 ),
                               )
                             : Text(
@@ -194,9 +195,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 }
 
 const _pageColors = [
-  NbColors.primary,
-  Color(0xFF4ECDC4),
-  Color(0xFF9B59B6),
+  SbColors.activeBlue,
+  SbColors.accentGold,
+  SbColors.accentBlue,
 ];
 
 // ─── Story Page 1: The Vision ──────────────────────────────────────
@@ -252,7 +253,7 @@ class _StoryPage1State extends State<_StoryPage1>
                 width: 140,
                 height: 140,
                 decoration: BoxDecoration(
-                  color: NbColors.primary.withValues(alpha: 0.1),
+                  color: SbColors.activeBlue.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: CustomPaint(
@@ -263,20 +264,20 @@ class _StoryPage1State extends State<_StoryPage1>
           ),
           const SizedBox(height: 40),
           // Title with fade-in
-          NbPopIn(
+          SbFadeIn(
             delay: const Duration(milliseconds: 600),
             child: const Text(
               'Imagina esto...',
               style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
-                color: NbColors.primary,
+                color: SbColors.activeBlue,
               ),
               textAlign: TextAlign.center,
             ),
           ),
           const SizedBox(height: 20),
-          NbPopIn(
+          SbFadeIn(
             delay: const Duration(milliseconds: 900),
             child: Text(
               'Apuntas tu cámara a cualquier objeto y al instante sabes cómo se dice en inglés.',
@@ -289,7 +290,7 @@ class _StoryPage1State extends State<_StoryPage1>
             ),
           ),
           const SizedBox(height: 12),
-          NbPopIn(
+          SbFadeIn(
             delay: const Duration(milliseconds: 1200),
             child: Text(
               'Cada objeto es una palabra que conquistas.',
@@ -360,7 +361,7 @@ class _StoryPage2State extends State<_StoryPage2>
                 width: 160,
                 height: 160,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4ECDC4).withValues(alpha: 0.1),
+                  color: SbColors.accentGold.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: ClipOval(
@@ -371,7 +372,7 @@ class _StoryPage2State extends State<_StoryPage2>
                       Icon(
                         Icons.question_mark_rounded,
                         size: 80,
-                        color: const Color(0xFF4ECDC4).withValues(
+                        color: SbColors.accentGold.withValues(
                           alpha: 0.3 + (0.7 * _blur.value),
                         ),
                       ),
@@ -392,20 +393,20 @@ class _StoryPage2State extends State<_StoryPage2>
             },
           ),
           const SizedBox(height: 40),
-          NbPopIn(
+          SbFadeIn(
             delay: const Duration(milliseconds: 400),
             child: const Text(
               'Tu primer objeto te espera',
               style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF4ECDC4),
+                color: SbColors.accentGold,
               ),
               textAlign: TextAlign.center,
             ),
           ),
           const SizedBox(height: 20),
-          NbPopIn(
+          SbFadeIn(
             delay: const Duration(milliseconds: 700),
             child: Text(
               'Mira a tu alrededor. Esa taza, esa silla, ese árbol fuera de la ventana...',
@@ -418,7 +419,7 @@ class _StoryPage2State extends State<_StoryPage2>
             ),
           ),
           const SizedBox(height: 12),
-          NbPopIn(
+          SbFadeIn(
             delay: const Duration(milliseconds: 1000),
             child: Text(
               'Cada uno tiene un nombre en inglés esperándote.',
@@ -482,13 +483,13 @@ class _StoryPage3State extends State<_StoryPage3>
                   width: 140,
                   height: 140,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF9B59B6).withValues(alpha: 0.1),
+                    color: SbColors.accentBlue.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.camera_alt,
                     size: 72,
-                    color: Color(0xFF9B59B6),
+                    color: SbColors.accentBlue,
                   ),
                 ),
               );
@@ -500,7 +501,7 @@ class _StoryPage3State extends State<_StoryPage3>
             style: TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF9B59B6),
+              color: SbColors.accentBlue,
             ),
             textAlign: TextAlign.center,
           ),
@@ -520,8 +521,8 @@ class _StoryPage3State extends State<_StoryPage3>
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.amber.shade50,
-              borderRadius: BorderRadius.circular(NbRadius.xs),
-              border: Border.all(color: Colors.amber.shade200),
+              borderRadius: BorderRadius.circular(SbRadius.secondary),
+              border: Border.all(color: SbColors.accentGoldMedium),
             ),
             child: Row(
               children: [
@@ -581,7 +582,7 @@ class _EyePainter extends CustomPainter {
 
     // Draw eye outline
     final outlinePaint = Paint()
-      ..color = NbColors.primary
+      ..color = SbColors.activeBlue
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3;
     canvas.drawPath(eyePath, outlinePaint);
@@ -590,7 +591,7 @@ class _EyePainter extends CustomPainter {
     final irisRadius = radius * 0.45 * open;
     if (irisRadius > 2) {
       final irisPaint = Paint()
-        ..color = NbColors.primary
+        ..color = SbColors.activeBlue
         ..style = PaintingStyle.fill;
       canvas.drawCircle(center, irisRadius, irisPaint);
 

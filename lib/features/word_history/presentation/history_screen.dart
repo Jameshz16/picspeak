@@ -5,8 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import '../../../app/nb_animations.dart';
-import '../../../app/theme.dart';
+import '../../../app/sb_animations.dart';
+import '../../../app/sb_radius.dart';
 import '../../flashcard_review/data/flashcard_providers.dart';
 import '../../object_recognition/domain/recognized_word.dart';
 import '../data/history_providers.dart';
@@ -47,7 +47,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 filled: true,
                 fillColor: theme.colorScheme.surfaceContainerHighest,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(NbRadius.xs),
+borderRadius: BorderRadius.circular(SbRadius.secondary),
                   borderSide: BorderSide.none,
                 ),
               ),
@@ -62,7 +62,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         future: _loadHistory(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: NbLoadingBlock());
+            return const Center(child: SbLoadingDots());
           }
 
           final entries = snapshot.data ?? [];
@@ -76,7 +76,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             itemCount: entries.length,
             itemBuilder: (context, index) {
               final word = entries[index];
-              return NbPopIn(
+return SbFadeIn(
                 delay: Duration(milliseconds: index * 60),
                 child: _HistoryListTile(
                   word: word,
@@ -153,13 +153,13 @@ class _HistoryListTileState extends ConsumerState<_HistoryListTile> {
       margin: const EdgeInsets.only(bottom: 10),
       child: InkWell(
         onTap: widget.onTap,
-        borderRadius: BorderRadius.circular(NbRadius.xs),
+borderRadius: BorderRadius.circular(SbRadius.secondary),
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(NbRadius.xs),
+ClipRRect(
+                borderRadius: BorderRadius.circular(SbRadius.secondary),
                 child: SizedBox(
                   width: 64,
                   height: 64,

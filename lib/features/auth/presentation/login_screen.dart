@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../app/nb_animations.dart';
-import '../../../app/theme.dart';
+import '../../../app/sb_animations.dart';
+import '../../../app/sb_colors.dart';
+import '../../../app/sb_radius.dart';
 import '../data/auth_providers.dart';
 import '../domain/auth_repository.dart';
 
@@ -135,7 +136,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.errorContainer,
-                        borderRadius: BorderRadius.circular(NbRadius.xs),
+                        borderRadius: BorderRadius.circular(SbRadius.secondary),
                       ),
                       child: Text(
                         _error!,
@@ -182,8 +183,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your password';
                       }
-                      if (value.length < 6) {
-                        return 'Password must be at least 6 characters';
+if (value.length < 8) {
+                        return 'Password must be at least 8 characters';
                       }
                       return null;
                     },
@@ -201,10 +202,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const SizedBox(height: 16),
 
                   // Sign in button
-                  NbPressable(
+                  SbPressable(
                     child: ElevatedButton(
                       onPressed: _isLoading ? null : _signInWithEmail,
                       style: ElevatedButton.styleFrom(
+                        backgroundColor: SbColors.accentBlue,
+                        foregroundColor: SbColors.primaryText,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
                       child: _isLoading
@@ -237,10 +240,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const SizedBox(height: 16),
 
                   // Google sign in
-                  NbPressable(
+                  SbPressable(
                     child: OutlinedButton.icon(
                       onPressed: _isLoading ? null : _signInWithGoogle,
                       style: OutlinedButton.styleFrom(
+                        foregroundColor: SbColors.activeBlue,
+                        backgroundColor: SbColors.surface,
+                        side: const BorderSide(color: SbColors.outline, width: 1),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
                       icon: const Icon(Icons.g_mobiledata, size: 24),

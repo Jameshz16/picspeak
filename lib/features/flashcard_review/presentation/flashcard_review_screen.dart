@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../app/nb_animations.dart';
+import '../../../app/sb_animations.dart';
 import '../../../core/services/tts_service.dart';
 import '../../app_settings/data/settings_providers.dart';
 import '../../object_recognition/domain/recognized_word.dart';
@@ -146,9 +146,9 @@ class _FlashcardReviewScreenState extends ConsumerState<FlashcardReviewScreen>
     final isSpanishPrimary = settingsAsync.valueOrNull?.locale == 'es';
     final voiceSpeed = settingsAsync.valueOrNull?.voiceSpeed ?? 1.0;
 
-    if (_isLoading) {
+if (_isLoading) {
       return const Scaffold(
-        body: Center(child: NbLoadingBlock()),
+        body: Center(child: SbLoadingDots()),
       );
     }
 
@@ -156,8 +156,8 @@ class _FlashcardReviewScreenState extends ConsumerState<FlashcardReviewScreen>
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) context.pop();
       });
-      return const Scaffold(
-        body: Center(child: NbLoadingBlock()),
+return const Scaffold(
+        body: Center(child: SbLoadingDots()),
       );
     }
 
@@ -379,7 +379,7 @@ class _FlashcardReviewScreenState extends ConsumerState<FlashcardReviewScreen>
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
-              NbPressable(
+SbPressable(
                 child: ElevatedButton.icon(
                   onPressed: _restart,
                   icon: const Icon(Icons.replay),
@@ -387,7 +387,7 @@ class _FlashcardReviewScreenState extends ConsumerState<FlashcardReviewScreen>
                 ),
               ),
               const SizedBox(height: 12),
-              NbPressable(
+SbPressable(
                 child: OutlinedButton.icon(
                   onPressed: () => context.pop(),
                   icon: const Icon(Icons.arrow_back),
