@@ -479,7 +479,7 @@ class _PronunciationButton extends ConsumerWidget {
             _ => 'Mejorable',
           },
           Icons.check_circle,
-          Colors.green.shade600,
+          SbColors.activeBlue,
         ),
       PronunciationPhase.failure => (
           'Intenta de nuevo',

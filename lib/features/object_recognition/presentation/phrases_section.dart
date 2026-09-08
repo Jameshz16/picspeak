@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../app/nb_animations.dart';
-import '../../../app/theme.dart';
+import '../../../app/sb_animations.dart';
+import '../../../app/sb_colors.dart';
+import '../../../app/sb_radius.dart';
+import '../../../app/sb_shadows.dart';
 import '../../../core/data/phrase_repository.dart';
 import '../domain/template_phrases.dart';
 import '../presentation/tts_play_notifier.dart';
@@ -41,7 +43,7 @@ class PhrasesSection extends ConsumerWidget {
                 Icon(
                   Icons.format_quote,
                   size: 20,
-                  color: NbColors.secondary,
+                  color: SbColors.accentBlue,
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -52,7 +54,7 @@ class PhrasesSection extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             ...List.generate(phrases.length, (index) {
-              return NbPopIn(
+              return SbFadeIn(
                 delay: Duration(milliseconds: index * 60),
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 8),
@@ -88,9 +90,9 @@ class _PhraseCard extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(NbRadius.xs),
-        border: Border.all(color: NbColors.outline, width: 2),
-        boxShadow: const [NbShadows.hard],
+        borderRadius: BorderRadius.circular(SbRadius.secondary),
+        border: Border.all(color: SbColors.outline, width: 1),
+        boxShadow: const [SbShadows.soft],
       ),
       child: Row(
         children: [
@@ -115,16 +117,16 @@ class _PhraseCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          NbPressable(
+          SbPressable(
             child: IconButton(
               onPressed: onSpeak,
               icon: const Icon(Icons.volume_up, size: 20),
               style: IconButton.styleFrom(
-                backgroundColor: NbColors.primary.withValues(alpha: 0.1),
-                foregroundColor: NbColors.primary,
+                backgroundColor: SbColors.accentBlue.withValues(alpha: 0.2),
+                foregroundColor: SbColors.activeBlue,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(NbRadius.xs),
-                  side: const BorderSide(color: NbColors.outline, width: 2),
+                  borderRadius: BorderRadius.circular(SbRadius.secondary),
+                  side: const BorderSide(color: SbColors.outline, width: 1),
                 ),
               ),
             ),
