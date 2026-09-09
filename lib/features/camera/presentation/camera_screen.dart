@@ -9,7 +9,9 @@ import '../../../app/sb_colors.dart';
 import '../../../app/sb_radius.dart';
 import '../../../core/data/label_map_repository.dart';
 import '../../../core/services/permission_service.dart';
+import '../../object_recognition/data/ai_translation_providers.dart';
 import '../../object_recognition/data/object_recognition_providers.dart';
+import '../../object_recognition/domain/ai_translation_repository.dart';
 import '../../object_recognition/domain/recognized_word.dart';
 import '../../premium/data/premium_providers.dart';
 import '../../premium/domain/scan_limit_repository.dart';
@@ -56,8 +58,9 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
     // Check scan limit before processing
     final isPremium = ref.read(isPremiumProvider);
     final scanLimitRepo = ref.read(scanLimitRepositoryProvider);
-    final hasReached =
-        await scanLimitRepo.hasReachedLimit(isPremium: isPremium);
+    final hasReached = await scanLimitRepo.hasReachedLimit(
+      isPremium: isPremium,
+    );
 
     if (hasReached && mounted) {
       await ScanLimitDialog.show(
@@ -71,10 +74,10 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
 
     setState(() => _isProcessing = true);
     try {
-      final path =
-          await ref.read(cameraNotifierProvider.notifier).takePicture();
-      final labels =
-          await ref.read(mlKitRepositoryProvider).labelImage(path);
+      final path = await ref
+          .read(cameraNotifierProvider.notifier)
+          .takePicture();
+      final labels = await ref.read(mlKitRepositoryProvider).labelImage(path);
 
       if (labels.isEmpty) {
         if (mounted) {
@@ -90,12 +93,33 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
 
       final labelMapRepo = await ref.read(labelMapProvider.future);
       final topLabel = labels.first;
-      final esTranslation = labelMapRepo.translate(topLabel.label);
-      final word = RecognizedWord.fromMlKit(
-        topLabel,
-        esTranslation,
-        path,
-      );
+      String? esTranslation = labelMapRepo.translate(topLabel.label);
+
+      // AI fallback: if not in curated list, try DeepSeek Vision
+      if (esTranslation == null) {
+        try {
+          final aiRepo = await ref.read(aiTranslationRepositoryProvider.future);
+          final aiResult = await aiRepo.translate(path, topLabel.label);
+
+          if (aiResult != null && mounted) {
+            esTranslation = aiResult.esLabel;
+            // Store AI phrases for ResultScreen
+            ref.read(aiPhrasesProvider.notifier).state = aiResult.phrases;
+          }
+        } on AiTranslationOfflineException catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(e.message)));
+          }
+          setState(() => _isProcessing = false);
+          return;
+        } catch (_) {
+          // API failure — fall through to "Sin traducción"
+        }
+      }
+
+      final word = RecognizedWord.fromMlKit(topLabel, esTranslation, path);
 
       if (mounted) {
         // Check if this matches the Word of the Day
@@ -103,23 +127,26 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
         final wordOfDay = wordOfDayAsync.valueOrNull;
         final wordOfDayRepo = ref.read(wordOfDayRepositoryProvider).valueOrNull;
         bool isWordOfDay = false;
-        
+
         if (wordOfDay != null && wordOfDayRepo != null) {
           final scannedLower = word.enLabel.toLowerCase();
           final targetLower = wordOfDay.enWord.toLowerCase();
           isWordOfDay = scannedLower == targetLower && !wordOfDayRepo.isFound();
-          
+
           if (isWordOfDay) {
             await wordOfDayRepo.markFound();
             ref.invalidate(wordOfDayFoundProvider);
           }
         }
 
-        context.push('/result', extra: {
-          'word': word,
-          'allLabels': labels,
-          'isWordOfDay': isWordOfDay,
-        });
+        context.push(
+          '/result',
+          extra: {
+            'word': word,
+            'allLabels': labels,
+            'isWordOfDay': isWordOfDay,
+          },
+        );
         // Record the scan (after successful recognition)
         await scanLimitRepo.recordScan();
         // Invalidate remaining scans provider to update UI
@@ -128,9 +155,9 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) {
@@ -148,23 +175,23 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
       backgroundColor: Colors.black,
       body: permissionAsync.when(
         data: (status) => _buildForPermission(status, cameraState),
-        loading: () =>
-            const _LoadingView(message: 'Verificando permisos...'),
+        loading: () => const _LoadingView(message: 'Verificando permisos...'),
         error: (err, _) => _ErrorView(message: err.toString()),
       ),
     );
   }
 
   Widget _buildForPermission(
-      PermissionStatus status, AsyncValue<void> cameraState) {
+    PermissionStatus status,
+    AsyncValue<void> cameraState,
+  ) {
     if (status.isGranted || status.isLimited) {
       return cameraState.when(
         data: (_) => _buildCameraPreview(),
         loading: () => const _LoadingView(message: 'Iniciando cámara...'),
         error: (err, _) => _ErrorView(
           message: err.toString(),
-          onRetry: () =>
-              ref.read(cameraNotifierProvider.notifier).resume(),
+          onRetry: () => ref.read(cameraNotifierProvider.notifier).resume(),
         ),
       );
     }
@@ -185,9 +212,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
 
     return _PermissionDeniedView(
       onRequestPermission: () async {
-        await ref
-            .read(permissionServiceProvider)
-            .requestCameraPermission();
+        await ref.read(permissionServiceProvider).requestCameraPermission();
       },
     );
   }
@@ -217,9 +242,7 @@ class _CameraScreenState extends ConsumerState<CameraScreen>
         if (_isProcessing)
           Container(
             color: Colors.black54,
-            child: const Center(
-              child: SbLoadingDots(),
-            ),
+            child: const Center(child: SbLoadingDots()),
           ),
         // Banner ad at the bottom (hidden for premium users)
         const Positioned(
@@ -257,17 +280,14 @@ class _LoadingView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SbLoadingDots(),
-            const SizedBox(height: 16),
-            Text(
-              message,
-              style: const TextStyle(color: Colors.white),
-            ),
-          ],
-        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SbLoadingDots(),
+          const SizedBox(height: 16),
+          Text(message, style: const TextStyle(color: Colors.white)),
+        ],
+      ),
     );
   }
 }
@@ -286,8 +306,7 @@ class _ErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline,
-                color: Colors.red, size: 48),
+            const Icon(Icons.error_outline, color: Colors.red, size: 48),
             const SizedBox(height: 16),
             Text(
               message,
@@ -331,16 +350,14 @@ class _PermissionDeniedView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.camera_alt,
-                color: Colors.white54, size: 64),
+            const Icon(Icons.camera_alt, color: Colors.white54, size: 64),
             const SizedBox(height: 24),
             Text(
               message ??
                   (permanentlyDenied
                       ? 'El permiso de cámara fue denegado permanentemente. Habilítalo en configuración para usar esta función.'
                       : 'PicSpeak necesita acceso a la cámara para identificar objetos a tu alrededor. Permite el permiso para continuar.'),
-              style: const TextStyle(
-                  color: Colors.white, fontSize: 16),
+              style: const TextStyle(color: Colors.white, fontSize: 16),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -376,17 +393,15 @@ class _ScanCounterBadge extends ConsumerWidget {
 
     if (isPremium) {
       return Container(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: Colors.amber.withValues(alpha: 0.9),
-            borderRadius: BorderRadius.circular(SbRadius.secondary),
-            ),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.workspace_premium,
-                size: 16, color: Colors.black87),
+          borderRadius: BorderRadius.circular(SbRadius.secondary),
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.workspace_premium, size: 16, color: Colors.black87),
             SizedBox(width: 4),
             Text(
               'PRO',
@@ -412,8 +427,7 @@ class _ScanCounterBadge extends ConsumerWidget {
         return GestureDetector(
           onTap: () => context.push('/paywall'),
           child: Container(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 12, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
               color: color,
               borderRadius: BorderRadius.circular(SbRadius.secondary),
@@ -458,13 +472,13 @@ class _WordOfDayBadge extends ConsumerWidget {
     return wordOfDayAsync.when(
       data: (word) {
         final isFound = foundAsync.valueOrNull ?? false;
-        
+
         return GestureDetector(
           onTap: () => _showWordOfDayDialog(context, word, isFound),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: isFound 
+              color: isFound
                   ? Colors.green.withValues(alpha: 0.9)
                   : Colors.white.withValues(alpha: 0.9),
               borderRadius: BorderRadius.circular(SbRadius.secondary),
@@ -497,7 +511,7 @@ class _WordOfDayBadge extends ConsumerWidget {
                     Text(
                       isFound ? word.esWord : word.hint,
                       style: TextStyle(
-                        color: isFound 
+                        color: isFound
                             ? Colors.white.withValues(alpha: 0.9)
                             : Colors.amber.shade800,
                         fontSize: 12,
@@ -516,7 +530,11 @@ class _WordOfDayBadge extends ConsumerWidget {
     );
   }
 
-  void _showWordOfDayDialog(BuildContext context, WordOfDay word, bool isFound) {
+  void _showWordOfDayDialog(
+    BuildContext context,
+    WordOfDay word,
+    bool isFound,
+  ) {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
@@ -579,7 +597,11 @@ class _WordOfDayBadge extends ConsumerWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.category, color: Colors.amber.shade800, size: 20),
+                    Icon(
+                      Icons.category,
+                      color: Colors.amber.shade800,
+                      size: 20,
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       'Categoría: ${word.categoryName}',
