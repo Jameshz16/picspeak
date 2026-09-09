@@ -57,3 +57,7 @@ app.*.map.json
 android/key.properties
 *.jks
 *.keystore
+
+# Pre-commit hook (copied manually to .git/hooks/)
+scripts/pre-commit
+.env
