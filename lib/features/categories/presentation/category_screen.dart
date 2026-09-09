@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../app/nb_animations.dart';
-import '../../../app/theme.dart';
+import '../../../app/sb_animations.dart';
+import '../../../app/sb_colors.dart';
+import '../../../app/sb_radius.dart';
 import '../../../core/data/label_map_repository.dart';
 import '../../../core/data/word_category.dart';
 import '../../object_recognition/domain/recognized_word.dart';
@@ -52,7 +53,7 @@ class CategoryScreen extends ConsumerWidget {
                         .where((p) => p.categoryId == cat.id)
                         .firstOrNull;
                     
-                    return NbPopIn(
+                    return SbFadeIn(
                       delay: Duration(milliseconds: index * 60),
                       child: _CategoryCard(
                         category: cat,
@@ -69,7 +70,7 @@ class CategoryScreen extends ConsumerWidget {
             ],
           );
         },
-        loading: () => const Center(child: NbLoadingBlock()),
+        loading: () => const Center(child: SbLoadingDots()),
         error: (err, _) => Center(child: Text('Error: $err')),
       ),
     );
@@ -96,7 +97,7 @@ class _StatsHeader extends StatelessWidget {
             theme.colorScheme.tertiaryContainer,
           ],
         ),
-        borderRadius: BorderRadius.circular(NbRadius.xs),
+        borderRadius: BorderRadius.circular(SbRadius.secondary),
       ),
       child: Row(
         children: [
@@ -334,7 +335,7 @@ class CategoryWordsScreen extends ConsumerWidget {
                   itemCount: words.length,
                   itemBuilder: (context, index) {
                     final entry = words[index];
-                    return NbPopIn(
+                    return SbFadeIn(
                       delay: Duration(milliseconds: index * 60),
                       child: _WordTile(
                         enWord: entry.key,
@@ -376,7 +377,7 @@ class CategoryWordsScreen extends ConsumerWidget {
             ],
           );
         },
-        loading: () => const Center(child: NbLoadingBlock()),
+        loading: () => const Center(child: SbLoadingDots()),
         error: (err, _) => Center(child: Text('Error: $err')),
       ),
     );
@@ -421,7 +422,7 @@ class _CategoryProgressHeader extends StatelessWidget {
         color: progress.isUnlocked
             ? theme.colorScheme.primaryContainer
             : theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(NbRadius.xs),
+        borderRadius: BorderRadius.circular(SbRadius.secondary),
       ),
       child: Column(
         children: [

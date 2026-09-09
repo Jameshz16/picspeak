@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../app/nb_animations.dart';
-import '../../../app/theme.dart';
+import '../../../app/sb_animations.dart';
+import '../../../app/sb_colors.dart';
+import '../../../app/sb_radius.dart';
 import '../../../core/data/label_map_repository.dart';
 import '../../../core/services/tts_service.dart';
 import '../../flashcard_review/data/flashcard_providers.dart';
@@ -146,7 +147,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
           children: [
             // Photo with overlay + scanning line animation
             ClipRRect(
-              borderRadius: BorderRadius.circular(NbRadius.xs),
+              borderRadius: BorderRadius.circular(SbRadius.secondary),
               child: AspectRatio(
                 aspectRatio: 4 / 3,
                 child: Stack(
@@ -165,7 +166,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
 
             // Word of the Day celebration
             if (widget.isWordOfDay) ...[
-              NbPopIn(
+              SbFadeIn(
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -175,7 +176,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                         Colors.orange.shade400,
                       ],
                     ),
-                    borderRadius: BorderRadius.circular(NbRadius.xs),
+                    borderRadius: BorderRadius.circular(SbRadius.secondary),
                     border: Border.all(color: Colors.amber.shade700, width: 2),
                   ),
                   child: Row(
@@ -222,10 +223,9 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     children: [
-                      NbTypewriter(
+                      SbTypewriter(
                         text: _currentWord.enLabel,
                         style: theme.textTheme.headlineMedium,
-                        duration: const Duration(milliseconds: 350),
                         onComplete: () {
                           if (mounted) setState(() => _wordRevealed = true);
                         },
@@ -310,7 +310,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
             const SizedBox(height: 16),
 
             // Favorite button
-            NbPressable(
+            SbPressable(
               child: ElevatedButton.icon(
                 onPressed: _isSaving || _isSaved ? null : _onFavorite,
                 icon: Icon(_isSaved ? Icons.favorite : Icons.favorite_border),
@@ -347,7 +347,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
             ],
 
             // Scan again
-            NbPressable(
+            SbPressable(
               child: OutlinedButton.icon(
                 onPressed: () => context.go('/'),
                 icon: const Icon(Icons.camera_alt),
@@ -420,7 +420,7 @@ class _TtsButton extends StatelessWidget {
       message: available
           ? label
           : 'Voice not available for this language',
-      child: NbPressable(
+      child: SbPressable(
         child: ElevatedButton.icon(
           onPressed: available && !isSpeaking
               ? () => onSpeak(text, locale)
@@ -479,19 +479,19 @@ class _PronunciationButton extends ConsumerWidget {
             _ => 'Mejorable',
           },
           Icons.check_circle,
-          Colors.green.shade600,
+          SbColors.activeBlue,
         ),
       PronunciationPhase.failure => (
           'Intenta de nuevo',
           Icons.mic,
-          NbColors.error,
+          SbColors.error,
         ),
     };
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        NbPressable(
+        SbPressable(
           child: ElevatedButton.icon(
             onPressed: isBusy
                 ? null
@@ -526,7 +526,7 @@ class _PronunciationButton extends ConsumerWidget {
             _failureMessage(state),
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: NbColors.error,
+                  color: SbColors.error,
                   fontWeight: FontWeight.w700,
                 ),
           ),

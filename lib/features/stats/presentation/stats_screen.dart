@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../app/nb_animations.dart';
-import '../../../app/theme.dart';
+import '../../../app/sb_animations.dart';
+import '../../../app/sb_radius.dart';
 import '../../categories/data/category_progress_repository.dart';
 import '../data/stats_repository.dart';
 import '../domain/learning_stats.dart';
@@ -22,7 +22,7 @@ class StatsScreen extends ConsumerWidget {
       ),
       body: statsAsync.when(
         data: (stats) => _buildContent(context, theme, stats),
-        loading: () => const Center(child: NbLoadingBlock()),
+        loading: () => const Center(child: SbLoadingDots()),
         error: (err, _) => Center(child: Text('Error: $err')),
       ),
     );
@@ -124,8 +124,8 @@ class StatsScreen extends ConsumerWidget {
           const SizedBox(height: 16),
 
           // Quick actions
-          if (stats.dueToday > 0)
-            NbPressable(
+if (stats.dueToday > 0)
+            SbPressable(
               child: ElevatedButton.icon(
                 onPressed: () => context.push('/review-today'),
                 icon: const Icon(Icons.school),
@@ -137,7 +137,7 @@ class StatsScreen extends ConsumerWidget {
             ),
           const SizedBox(height: 12),
 
-          NbPressable(
+SbPressable(
             child: OutlinedButton.icon(
               onPressed: () => context.go('/'),
               icon: const Icon(Icons.camera_alt),
@@ -181,7 +181,7 @@ class _StreakCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(NbRadius.xs),
+borderRadius: BorderRadius.circular(SbRadius.secondary),
           gradient: streakDays > 0
               ? LinearGradient(
                   colors: [

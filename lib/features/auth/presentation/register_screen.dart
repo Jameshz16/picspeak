@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../app/nb_animations.dart';
-import '../../../app/theme.dart';
+import '../../../app/sb_animations.dart';
+import '../../../app/sb_colors.dart';
+import '../../../app/sb_radius.dart';
 import '../data/auth_providers.dart';
 import '../domain/auth_repository.dart';
 
@@ -115,7 +116,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: theme.colorScheme.errorContainer,
-                      borderRadius: BorderRadius.circular(NbRadius.xs),
+                      borderRadius: BorderRadius.circular(SbRadius.secondary),
                     ),
                     child: Text(
                       _error!,
@@ -132,6 +133,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 TextFormField(
                   controller: _nameController,
                   textCapitalization: TextCapitalization.words,
+                  maxLength: 50,
                   decoration: const InputDecoration(
                     labelText: 'Name',
                     prefixIcon: Icon(Icons.person_outlined),
@@ -140,6 +142,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Please enter your name';
+                    }
+                    if (value.trim().length > 50) {
+                      return 'Name must be 50 characters or less';
+                    }
+                    // Block control characters and HTML-like injection
+                    if (RegExp(r'[<>{}\[\]\\/]').hasMatch(value)) {
+                      return 'Name contains invalid characters';
                     }
                     return null;
                   },
@@ -175,14 +184,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     labelText: 'Password',
                     prefixIcon: Icon(Icons.lock_outlined),
                     border: OutlineInputBorder(),
-                    helperText: 'At least 6 characters',
+                    helperText: 'At least 8 characters',
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a password';
                     }
-                    if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
+if (value.length < 8) {
+                      return 'Password must be at least 8 characters';
                     }
                     return null;
                   },
@@ -208,10 +217,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 const SizedBox(height: 24),
 
                 // Register button
-                NbPressable(
+                SbPressable(
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _register,
                     style: ElevatedButton.styleFrom(
+                      backgroundColor: SbColors.accentBlue,
+                      foregroundColor: SbColors.primaryText,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                     child: _isLoading

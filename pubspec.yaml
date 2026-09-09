@@ -80,6 +80,10 @@ dependencies:
   # Typography (Neo-Brutalism: Lexend headlines, Inter body)
   google_fonts: ^6.2.1
 
+  # AI Fallback (DeepSeek Vision)
+  flutter_dotenv: ^5.2.0
+  http: ^1.2.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
